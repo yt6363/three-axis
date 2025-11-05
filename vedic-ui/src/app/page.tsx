@@ -1474,7 +1474,6 @@ export default function VedicTerminalIngressApp() {
   const [ingressLoading, setIngressLoading] = useState(false);
   const [retroLoading, setRetroLoading] = useState(false);
   const [combLoading, setCombLoading] = useState(false);
-  const [prefetchLoading, setPrefetchLoading] = useState(false);
 
   const [lagnaRows, setLagnaRows] = useState<
     { timeISO: string; from: RashiName; to: RashiName; degree: number }[]
@@ -1836,14 +1835,6 @@ const [velocityLoading, setVelocityLoading] = useState(false);
       const requestId = prefetchRequestRef.current + 1;
       prefetchRequestRef.current = requestId;
 
-      // Prevent duplicate requests
-      if (prefetchLoading) {
-        append("⚠️ prefetch already in progress, skipping...");
-        return;
-      }
-
-      setPrefetchLoading(true);
-
       try {
         const startSeconds = range.start ?? range.end;
         const endSeconds = range.end ?? range.start;
@@ -1858,11 +1849,15 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         }
         if (start == null) start = end;
         if (end == null) end = start;
-        if (start == null || end == null) return;
+        if (start == null || end == null) {
+          return;
+        }
 
         const startMonth = DateTime.fromSeconds(start, { zone: tz }).startOf("month").minus({ months: 1 });
         const endMonth = DateTime.fromSeconds(end, { zone: tz }).startOf("month").plus({ months: 1 });
-        if (!startMonth.isValid || !endMonth.isValid) return;
+        if (!startMonth.isValid || !endMonth.isValid) {
+          return;
+        }
 
         let coords: { lat: number; lon: number };
         try {
@@ -1993,11 +1988,8 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           }
         }
         }
-      } finally {
-        // Only clear loading if this is still the current request
-        if (prefetchRequestRef.current === requestId) {
-          setPrefetchLoading(false);
-        }
+      } catch (err: unknown) {
+        append(`prefetch error: ${formatError(err)}`);
       }
     },
     [
@@ -2006,7 +1998,6 @@ const [velocityLoading, setVelocityLoading] = useState(false);
       combustionEventsByMonth,
       getSwissMonthly,
       ingressEventsByMonth,
-      prefetchLoading,
       readCoordinates,
       retroEventsByMonth,
       tz,
