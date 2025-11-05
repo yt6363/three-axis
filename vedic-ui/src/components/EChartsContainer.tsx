@@ -238,7 +238,7 @@ const EChartsContainerBase = forwardRef<EChartsContainerHandle, EChartsContainer
           ]);
           const significantChanges = changedProps.filter((prop) => !noisyProps.has(prop));
           if (significantChanges.length > 0) {
-            console.error("[CRITICAL] Chart rebuilt because these props changed:", significantChanges);
+            console.debug("[Chart rebuilt] Props changed:", significantChanges);
           } else {
             console.debug("[FYI] Chart props changed on expected keys:", changedProps);
           }

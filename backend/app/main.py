@@ -260,8 +260,9 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
                 return month_iso, {"ok": False, "error": str(exc)}
 
         # Compute all uncached months concurrently
+        import asyncio
         tasks = [compute_one_month(month_iso) for month_iso in uncached_months]
-        computed_results = await anyio.gather(*tasks)
+        computed_results = await asyncio.gather(*tasks)
 
         for month_iso, result in computed_results:
             results[month_iso] = result

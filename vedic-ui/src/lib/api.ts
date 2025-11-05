@@ -135,7 +135,7 @@ export async function fetchSwissMonthly(
   return postSwiss<SwissMonthlyResponse>("/api/swiss/monthly", payload);
 }
 
-type SwissMonthlyBatchRequest = {
+export type SwissMonthlyBatchRequest = {
   lat: number;
   lon: number;
   tz: string;

@@ -532,6 +532,10 @@ export function JupiterTerminal({
   const [activeSymbol, setActiveSymbol] = useState("^NSEI");
   const [interval, setInterval] = useState<Interval>("1d");
   const [period, setPeriod] = useState<Period>("5y");
+  const [customIntervalInput, setCustomIntervalInput] = useState("");
+  const [customPeriodInput, setCustomPeriodInput] = useState("");
+  const [showIntervalCustom, setShowIntervalCustom] = useState(false);
+  const [showPeriodCustom, setShowPeriodCustom] = useState(false);
   const [candles, setCandles] = useState<Candle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -2671,12 +2675,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{interval}</span>
                   </button>
                   {intervalDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-48 overflow-y-auto">
                       {(["5m", "15m", "1h", "4h", "1d", "1wk", "1mo", "3mo"] as const).map((opt) => (
                         <button
                           key={opt}
                           type="button"
-                          onClick={() => { setInterval(opt); intervalDropdown.setOpen(false); }}
+                          onClick={() => { setInterval(opt); setShowIntervalCustom(false); intervalDropdown.setOpen(false); }}
                           className={cls(
                             "w-full px-3 py-1.5 text-left transition-colors",
                             interval === opt ? "bg-green-900/30 text-green-300" : "text-zinc-200 hover:bg-zinc-900"
@@ -2686,6 +2690,35 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                           {opt}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() => setShowIntervalCustom(!showIntervalCustom)}
+                        className="w-full px-3 py-1.5 text-left transition-colors text-green-400 hover:bg-zinc-900 border-t border-zinc-800/40"
+                        style={{ fontSize: '0.7rem' }}
+                      >
+                        Custom...
+                      </button>
+                      {showIntervalCustom && (
+                        <div className="p-2 border-t border-zinc-800/40">
+                          <input
+                            type="text"
+                            value={customIntervalInput}
+                            onChange={(e) => setCustomIntervalInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && customIntervalInput.trim()) {
+                                setInterval(customIntervalInput.trim() as Interval);
+                                intervalDropdown.setOpen(false);
+                                setShowIntervalCustom(false);
+                                setCustomIntervalInput("");
+                              }
+                            }}
+                            placeholder="e.g. 30m, 2h, 1d"
+                            className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1 text-xs focus:outline-none focus:border-green-500"
+                            autoFocus
+                          />
+                          <div className="text-zinc-500 text-[0.6rem] mt-1">Press Enter to apply</div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2699,12 +2732,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{period}</span>
                   </button>
                   {periodDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-48 overflow-y-auto">
                       {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const).map((opt) => (
                         <button
                           key={opt}
                           type="button"
-                          onClick={() => { setPeriod(opt); periodDropdown.setOpen(false); }}
+                          onClick={() => { setPeriod(opt); setShowPeriodCustom(false); periodDropdown.setOpen(false); }}
                           className={cls(
                             "w-full px-3 py-1.5 text-left transition-colors",
                             period === opt ? "bg-green-900/30 text-green-300" : "text-zinc-200 hover:bg-zinc-900"
@@ -2714,6 +2747,35 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                           {opt}
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        onClick={() => setShowPeriodCustom(!showPeriodCustom)}
+                        className="w-full px-3 py-1.5 text-left transition-colors text-green-400 hover:bg-zinc-900 border-t border-zinc-800/40"
+                        style={{ fontSize: '0.7rem' }}
+                      >
+                        Custom...
+                      </button>
+                      {showPeriodCustom && (
+                        <div className="p-2 border-t border-zinc-800/40">
+                          <input
+                            type="text"
+                            value={customPeriodInput}
+                            onChange={(e) => setCustomPeriodInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && customPeriodInput.trim()) {
+                                setPeriod(customPeriodInput.trim() as Period);
+                                periodDropdown.setOpen(false);
+                                setShowPeriodCustom(false);
+                                setCustomPeriodInput("");
+                              }
+                            }}
+                            placeholder="e.g. 10d, 15mo, 3y"
+                            className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1 text-xs focus:outline-none focus:border-green-500"
+                            autoFocus
+                          />
+                          <div className="text-zinc-500 text-[0.6rem] mt-1">Press Enter to apply</div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
