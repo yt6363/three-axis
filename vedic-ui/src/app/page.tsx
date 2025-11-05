@@ -2029,7 +2029,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           <input
             type="text"
             inputMode="decimal"
-                    pattern="[-+]?[0-9]*([.][0-9]*)?"
+            pattern="[-+]?[0-9]*\.?[0-9]*"
             value={latStr}
             onChange={(event) => setLatStr(event.target.value)}
             className="w-full bg-black border border-zinc-800 px-3 py-2 outline-none focus:border-green-600 font-mono text-xs text-zinc-300"
@@ -2040,7 +2040,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           <input
             type="text"
             inputMode="decimal"
-                    pattern="[-+]?[0-9]*([.][0-9]*)?"
+            pattern="[-+]?[0-9]*\.?[0-9]*"
             value={lonStr}
             onChange={(event) => setLonStr(event.target.value)}
             className="w-full bg-black border border-zinc-800 px-3 py-2 outline-none focus:border-green-600 font-mono text-xs text-zinc-300"
