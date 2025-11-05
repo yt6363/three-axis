@@ -1990,6 +1990,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
             }
           }
         }
+        }
       } finally {
         // Only clear loading if this is still the current request
         if (prefetchRequestRef.current === requestId) {
