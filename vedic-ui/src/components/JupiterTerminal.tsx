@@ -532,6 +532,7 @@ export function JupiterTerminal({
   const [activeSymbol, setActiveSymbol] = useState("^NSEI");
   const [interval, setInterval] = useState<Interval>("1d");
   const [period, setPeriod] = useState<Period>("5y");
+  const [customPeriodYears, setCustomPeriodYears] = useState<string>("");
   const [candles, setCandles] = useState<Candle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -2671,7 +2672,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{interval}</span>
                   </button>
                   {intervalDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-60 overflow-y-auto">
                       {(["5m", "15m", "1h", "4h", "1d", "1wk", "1mo", "3mo"] as const).map((opt) => (
                         <button
                           key={opt}
@@ -2699,12 +2700,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{period}</span>
                   </button>
                   {periodDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-60 overflow-y-auto">
                       {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const).map((opt) => (
                         <button
                           key={opt}
                           type="button"
-                          onClick={() => { setPeriod(opt); periodDropdown.setOpen(false); }}
+                          onClick={() => { setPeriod(opt); setCustomPeriodYears(""); periodDropdown.setOpen(false); }}
                           className={cls(
                             "w-full px-3 py-1.5 text-left transition-colors",
                             period === opt ? "bg-green-900/30 text-green-300" : "text-zinc-200 hover:bg-zinc-900"
@@ -2714,6 +2715,36 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                           {opt}
                         </button>
                       ))}
+                      <div className="border-t border-zinc-800/60 px-3 py-2">
+                        <label className="block text-zinc-500 uppercase tracking-wide mb-1" style={{ fontSize: '0.6rem' }}>
+                          Custom (years)
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            placeholder="e.g., 3, 12"
+                            value={customPeriodYears}
+                            onChange={(e) => setCustomPeriodYears(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 bg-zinc-900 border border-zinc-700/50 px-2 py-1 text-zinc-300 text-xs focus:outline-none focus:border-green-600/50"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const years = parseInt(customPeriodYears, 10);
+                              if (years > 0 && years <= 30) {
+                                setPeriod(`${years}y` as Period);
+                                periodDropdown.setOpen(false);
+                              }
+                            }}
+                            className="px-3 py-1 bg-green-900/20 border border-green-600/50 text-green-400 text-xs hover:bg-green-900/30 transition-colors"
+                          >
+                            Set
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
