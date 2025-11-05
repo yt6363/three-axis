@@ -135,6 +135,24 @@ export async function fetchSwissMonthly(
   return postSwiss<SwissMonthlyResponse>("/api/swiss/monthly", payload);
 }
 
+type SwissMonthlyBatchRequest = {
+  lat: number;
+  lon: number;
+  tz: string;
+  monthStartISOs: string[];
+};
+
+export type SwissMonthlyBatchResponse = {
+  ok: boolean;
+  months: Record<string, SwissMonthlyResponse>;
+};
+
+export async function fetchSwissMonthlyBatch(
+  payload: SwissMonthlyBatchRequest,
+): Promise<SwissMonthlyBatchResponse> {
+  return postSwiss<SwissMonthlyBatchResponse>("/api/swiss/monthly/batch", payload);
+}
+
 export type OrbitalOverlayRequest = {
   objects: string[];
   startISO: string;
