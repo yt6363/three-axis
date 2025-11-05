@@ -36,6 +36,8 @@ app.add_middleware(
 )
 
 cache = ResponseCache(ttl_seconds=120)
+# Long-term cache for planetary events (1 hour - data doesn't change)
+events_cache = ResponseCache(ttl_seconds=3600)
 
 
 class SwissHorizonPayload(BaseModel):
@@ -56,6 +58,15 @@ class SwissMonthlyPayload(BaseModel):
     lon: float
     tz: str
     month_start_iso: str = Field(alias="monthStartISO", min_length=7)
+
+
+class SwissMonthlyBatchPayload(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    lat: float
+    lon: float
+    tz: str
+    month_start_isos: List[str] = Field(alias="monthStartISOs", min_length=1, max_length=60)
 
 
 class OrbitalOverlayPayload(BaseModel):
@@ -186,6 +197,12 @@ async def swiss_horizon(payload: SwissHorizonPayload):
 
 @app.post("/api/swiss/monthly")
 async def swiss_monthly(payload: SwissMonthlyPayload):
+    # Check cache first
+    cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{payload.month_start_iso}"
+    cached = events_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     try:
         data = await anyio.to_thread.run_sync(
             compute_monthly,
@@ -198,7 +215,58 @@ async def swiss_monthly(payload: SwissMonthlyPayload):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # pragma: no cover
         raise HTTPException(status_code=500, detail=f"Swiss monthly failed: {exc}") from exc
-    return {"ok": True, **data}
+
+    result = {"ok": True, **data}
+    events_cache.set(cache_key, result)
+    return result
+
+
+@app.post("/api/swiss/monthly/batch")
+async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
+    """
+    Batch endpoint to compute multiple months at once.
+    Much faster than calling /monthly 60 times for 5 years!
+    Returns cached data when available.
+    """
+    results = {}
+
+    # Check which months are already cached
+    uncached_months = []
+    for month_iso in payload.month_start_isos:
+        cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
+        cached = events_cache.get(cache_key)
+        if cached is not None:
+            results[month_iso] = cached
+        else:
+            uncached_months.append(month_iso)
+
+    # Compute uncached months in parallel
+    if uncached_months:
+        async def compute_one_month(month_iso: str):
+            try:
+                data = await anyio.to_thread.run_sync(
+                    compute_monthly,
+                    payload.lat,
+                    payload.lon,
+                    payload.tz,
+                    month_iso,
+                )
+                result = {"ok": True, **data}
+                cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
+                events_cache.set(cache_key, result)
+                return month_iso, result
+            except Exception as exc:
+                # Return error for this specific month
+                return month_iso, {"ok": False, "error": str(exc)}
+
+        # Compute all uncached months concurrently
+        tasks = [compute_one_month(month_iso) for month_iso in uncached_months]
+        computed_results = await anyio.gather(*tasks)
+
+        for month_iso, result in computed_results:
+            results[month_iso] = result
+
+    return {"ok": True, "months": results}
 
 
 @app.post("/api/orbit/overlay")
