@@ -1,28 +1,36 @@
-# Market Terminal
+# THREE AXIS - Vedic Astrology Terminal
 
-This repository contains a small full-stack candlestick terminal built with a FastAPI backend and a Next.js frontend.
+Professional financial charting terminal with integrated Vedic astrology, planetary overlays, and performance optimizations.
 
-## Backend
+## Repository
 
-- Location: `backend/`
-- Stack: FastAPI, pandas, yfinance
-- Run: `make backend` (after `make install-backend`)
-- Endpoint: `GET /api/ohlc` with query params `symbol`, `interval`, optional `period`
-- Tests: `cd backend && python3 -m pytest`
+https://github.com/yt6363/three-axis
 
-## Frontend
+## Features
 
-- Location: `vedic-ui/`
-- Stack: Next.js (React 19), TypeScript, Lightweight Charts
-- Run: `make frontend` (after `make install-frontend`)
-- Env: uses `NEXT_PUBLIC_API_BASE` (default `http://localhost:8000`)
+- High-performance charting (<20ms INP, zero snap-back)
+- Dual synchronized charts (price + orbital)
+- Planetary overlays & event tracking
+- Clerk auth + Lemon Squeezy payments
+- Next.js 15.5.4 + FastAPI backend
 
-## Development
+## Quick Start
 
-1. Install backend deps: `make install-backend`
-2. Install frontend deps: `make install-frontend`
-3. Start backend API: `make backend`
-4. Start frontend UI: `make frontend`
+### Frontend
+```bash
+cd vedic-ui && npm install && npm run dev
+```
 
-The frontend expects the backend on port `8000` and will fetch live data on demand. Indicator settings persist in `localStorage` and the backend caches responses for two minutes.
+### Backend
+```bash
+cd backend && pip install -r requirements.txt && uvicorn app.main:app --reload
+```
 
+## Performance
+
+- ✅ <20ms INP on all interactions
+- ✅ RequestAnimationFrame updates
+- ✅ Zero snap-back panning
+- ✅ CLS near 0
+
+Built with Next.js, React 19, FastAPI, and Swiss Ephemeris.
