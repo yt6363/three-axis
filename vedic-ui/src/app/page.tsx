@@ -33,14 +33,14 @@ function must(ok: boolean, msg: string) {
 
 const PLANET_DISPLAY_CODES: Record<string, string> = {
   Sun: "S",
-  Moon: "M",
+  Moon: "Mo",
   Mercury: "Me",
   Venus: "V",
-  Mars: "M",
+  Mars: "Ma",
   Jupiter: "J",
-  Saturn: "St",
-  Rahu: "R",
-  Ketu: "K",
+  Saturn: "Sa",
+  Rahu: "NN",  // North Node
+  Ketu: "SN",  // South Node
   Neptune: "N",
   Uranus: "U",
   Pluto: "P",
@@ -989,6 +989,8 @@ const STATION_PLANETS = [
   "Uranus",
   "Neptune",
   "Pluto",
+  "Rahu",  // North Node
+  "Ketu",  // South Node
 ] as const;
 
 type StationPlanetName = (typeof STATION_PLANETS)[number];
@@ -2363,7 +2365,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           setVelocityRows(velocityNext);
         }
         append(
-          `ingress ${monthLabel} ready (moon ${moonNext.length}, sun ${sunNext.length}, planets ${otherIngress.length}, velocity ${velocityNext.length})`,
+          `ingress ${monthLabel} ready (moon ${moonNext.length}, sun ${sunNext.length}, data ${otherIngress.length}, velocity ${velocityNext.length})`,
         );
       } catch (err: unknown) {
         if (ingressRequestRef.current === requestId) {
@@ -3352,7 +3354,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
             <div className="mb-6 space-y-2 font-mono text-[10px] text-zinc-600">
               <p className="text-zinc-400 uppercase tracking-wide">Premium Features</p>
               <ul className="list-inside list-disc space-y-1 pl-1">
-                <li>Advanced Vedic astrology events</li>
+                <li>Advanced data events</li>
                 <li>Real-time market data</li>
                 <li>Download all data as CSV</li>
                 <li>Navigate to any month</li>

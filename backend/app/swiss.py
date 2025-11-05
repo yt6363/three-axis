@@ -55,6 +55,8 @@ STATION_PLANET_NAMES: Sequence[str] = [
     "Uranus",
     "Neptune",
     "Pluto",
+    "Rahu",  # North Node
+    "Ketu",  # South Node
 ]
 
 COMBUSTION_ORBS: Dict[str, float] = {
@@ -143,6 +145,8 @@ VELOCITY_PLANETS: Tuple[str, ...] = (
     "Uranus",
     "Neptune",
     "Pluto",
+    "Rahu",  # North Node
+    "Ketu",  # South Node
 )
 
 VELOCITY_STEP_MINUTES: Dict[str, int] = {
@@ -156,6 +160,8 @@ VELOCITY_STEP_MINUTES: Dict[str, int] = {
     "Uranus": 240,
     "Neptune": 240,
     "Pluto": 240,
+    "Rahu": 240,  # North Node moves slowly
+    "Ketu": 240,  # South Node moves slowly
 }
 
 VELOCITY_REFINE_HALF_WINDOW = timedelta(hours=6)
