@@ -1,4 +1,4 @@
-# THREE AXIS - Vedic Astrology Terminal
+# THREE AXIS - Terminal
 
 Professional financial charting terminal with integrated Vedic astrology, planetary overlays, and performance optimizations.
 
