@@ -271,6 +271,17 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
 
 @app.post("/api/orbit/overlay")
 async def orbital_overlay(payload: OrbitalOverlayPayload):
+    # Create cache key from payload
+    objects_key = "|".join(sorted(payload.objects))
+    weights_key = "|".join(f"{k}:{v}" for k, v in sorted((payload.weights or {}).items()))
+    flags_key = f"{payload.plot_speed}|{payload.plot_grav_force}|{payload.plot_geo_declination}|{payload.plot_helio_declination}|{payload.plot_weighted_geo}|{payload.plot_weighted_helio}"
+    cache_key = f"overlay|{objects_key}|{payload.start_iso}|{payload.duration_unit}|{payload.duration_value}|{flags_key}|{weights_key}"
+
+    # Check cache first
+    cached = events_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     try:
         worker = partial(
             compute_overlay_series,
@@ -304,6 +315,9 @@ async def orbital_overlay(payload: OrbitalOverlayPayload):
             for item in series
         ]
     }
+
+    # Cache the response
+    events_cache.set(cache_key, response)
     return response
 
 

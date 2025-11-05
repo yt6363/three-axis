@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { JupiterTerminal } from "@/components/JupiterTerminal";
 import { Pane } from "@/components/Pane";
 import { UserButton } from "@/components/UserButton";
-import { fetchSwissHorizon, fetchSwissMonthly, type SwissMonthlyResponse } from "@/lib/api";
+import { fetchSwissHorizon, fetchSwissMonthly, fetchSwissMonthlyBatch, type SwissMonthlyResponse } from "@/lib/api";
 
 // Vedic Terminal Ingress App — TypeScript + React
 // Accurate Lahiri sidereal using Swiss Ephemeris when available, with astronomia/internal fallbacks.
@@ -1465,12 +1465,14 @@ export default function VedicTerminalIngressApp() {
   const ingressRequestRef = useRef(0);
   const retroRequestRef = useRef(0);
   const combRequestRef = useRef(0);
+  const prefetchRequestRef = useRef(0);
   const swissMonthlyCacheRef = useRef(new Map<string, SwissMonthlyResponse>());
   const swissMonthlyPendingRef = useRef(new Map<string, Promise<SwissMonthlyResponse>>());
   const [horizonLoading, setHorizonLoading] = useState(false);
   const [ingressLoading, setIngressLoading] = useState(false);
   const [retroLoading, setRetroLoading] = useState(false);
   const [combLoading, setCombLoading] = useState(false);
+  const [prefetchLoading, setPrefetchLoading] = useState(false);
 
   const [lagnaRows, setLagnaRows] = useState<
     { timeISO: string; from: RashiName; to: RashiName; degree: number }[]
@@ -1828,34 +1830,48 @@ const [velocityLoading, setVelocityLoading] = useState(false);
 
   const prefetchMonthlyData = useCallback(
     async (range: { start: number | null; end: number | null }) => {
-      const startSeconds = range.start ?? range.end;
-      const endSeconds = range.end ?? range.start;
-      if (startSeconds == null && endSeconds == null) {
+      // Cancel any existing prefetch request
+      const requestId = prefetchRequestRef.current + 1;
+      prefetchRequestRef.current = requestId;
+
+      // Prevent duplicate requests
+      if (prefetchLoading) {
+        append("⚠️ prefetch already in progress, skipping...");
         return;
       }
 
-      let start = startSeconds;
-      let end = endSeconds ?? startSeconds;
-      if (start != null && end != null && start > end) {
-        [start, end] = [end, start];
-      }
-      if (start == null) start = end;
-      if (end == null) end = start;
-      if (start == null || end == null) return;
+      setPrefetchLoading(true);
 
-      const startMonth = DateTime.fromSeconds(start, { zone: tz }).startOf("month").minus({ months: 1 });
-      const endMonth = DateTime.fromSeconds(end, { zone: tz }).startOf("month").plus({ months: 1 });
-      if (!startMonth.isValid || !endMonth.isValid) return;
-
-      let coords: { lat: number; lon: number };
       try {
-        assertTimezone();
-        coords = readCoordinates();
-      } catch (err: unknown) {
-        append(`prefetch skipped: ${formatError(err)}`);
-        return;
-      }
+        const startSeconds = range.start ?? range.end;
+        const endSeconds = range.end ?? range.start;
+        if (startSeconds == null && endSeconds == null) {
+          return;
+        }
 
+        let start = startSeconds;
+        let end = endSeconds ?? startSeconds;
+        if (start != null && end != null && start > end) {
+          [start, end] = [end, start];
+        }
+        if (start == null) start = end;
+        if (end == null) end = start;
+        if (start == null || end == null) return;
+
+        const startMonth = DateTime.fromSeconds(start, { zone: tz }).startOf("month").minus({ months: 1 });
+        const endMonth = DateTime.fromSeconds(end, { zone: tz }).startOf("month").plus({ months: 1 });
+        if (!startMonth.isValid || !endMonth.isValid) return;
+
+        let coords: { lat: number; lon: number };
+        try {
+          assertTimezone();
+          coords = readCoordinates();
+        } catch (err: unknown) {
+          append(`prefetch skipped: ${formatError(err)}`);
+          return;
+        }
+
+      // Collect all months that need data
       const monthsToCheck: LuxonDateTime[] = [];
       let cursor = startMonth;
       const final = endMonth;
@@ -1864,33 +1880,120 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         cursor = cursor.plus({ months: 1 });
       }
 
+      // Filter to only months that need at least one event type
+      const monthsNeedingData: { month: LuxonDateTime; monthKey: string; monthStartISO: string }[] = [];
       for (const monthStart of monthsToCheck) {
         const monthKey = monthStart.toFormat("yyyy-LL");
         const needIngress = !ingressEventsByMonth.has(monthKey);
         const needCombustion = !combustionEventsByMonth.has(monthKey);
         const needRetro = !retroEventsByMonth.has(monthKey);
         const needVelocity = !velocityEventsByMonth.has(monthKey);
-        if (!needIngress && !needCombustion && !needRetro && !needVelocity) continue;
-        try {
+        if (needIngress || needCombustion || needRetro || needVelocity) {
           const monthStartISO = monthStart
             .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
             .toFormat("yyyy-LL-dd'T'HH:mm:ss");
-          const swissMonthly = await getSwissMonthly(coords.lat, coords.lon, monthStartISO);
-          const { ingress, combustion, retro, velocity } = extractMonthlyChartEvents(swissMonthly);
-          if (needIngress) {
-            setIngressEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, ingress));
+          monthsNeedingData.push({ month: monthStart, monthKey, monthStartISO });
+        }
+      }
+
+      if (monthsNeedingData.length === 0) {
+        return;
+      }
+
+        // Use batch API for better performance (max 60 months per batch)
+        const BATCH_SIZE = 60;
+        for (let i = 0; i < monthsNeedingData.length; i += BATCH_SIZE) {
+          // Check if request was cancelled
+          if (prefetchRequestRef.current !== requestId) {
+            append("⚠️ prefetch cancelled");
+            return;
           }
-          if (needCombustion) {
-            setCombustionEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, combustion));
+
+          const batch = monthsNeedingData.slice(i, i + BATCH_SIZE);
+          const monthStartISOs = batch.map((m) => m.monthStartISO);
+
+          try {
+            append(`fetching ${batch.length} months in batch (${batch[0].month.toFormat("MMM yyyy")} - ${batch[batch.length - 1].month.toFormat("MMM yyyy")})...`);
+
+            const batchResponse = await fetchSwissMonthlyBatch({
+              lat: coords.lat,
+              lon: coords.lon,
+              tz,
+              monthStartISOs,
+            });
+
+            // Check again after async operation
+            if (prefetchRequestRef.current !== requestId) {
+              append("⚠️ prefetch cancelled");
+              return;
+            }
+
+            if (!batchResponse.ok) {
+              throw new Error("Batch request failed");
+            }
+
+          // Process each month in the batch
+          for (const { monthKey, monthStartISO } of batch) {
+            const swissMonthly = batchResponse.months[monthStartISO];
+            if (!swissMonthly || !swissMonthly.ok) {
+              append(`⚠️ ${monthKey}: ${swissMonthly?.error || "no data"}`);
+              continue;
+            }
+
+            const { ingress, combustion, retro, velocity } = extractMonthlyChartEvents(swissMonthly);
+            const needIngress = !ingressEventsByMonth.has(monthKey);
+            const needCombustion = !combustionEventsByMonth.has(monthKey);
+            const needRetro = !retroEventsByMonth.has(monthKey);
+            const needVelocity = !velocityEventsByMonth.has(monthKey);
+
+            if (needIngress) {
+              setIngressEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, ingress));
+            }
+            if (needCombustion) {
+              setCombustionEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, combustion));
+            }
+            if (needRetro) {
+              setRetroEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, retro));
+            }
+            if (needVelocity) {
+              setVelocityEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, velocity));
+            }
           }
-          if (needRetro) {
-            setRetroEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, retro));
-          }
-          if (needVelocity) {
-            setVelocityEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, velocity));
-          }
+
+          append(`✓ loaded ${batch.length} months`);
         } catch (err: unknown) {
-          append(`prefetch ${monthStart.toFormat("LLL yyyy")} error: ${formatError(err)}`);
+          append(`batch error: ${formatError(err)}`);
+          // Fall back to individual requests for this batch
+          for (const { month: monthStart, monthKey, monthStartISO } of batch) {
+            try {
+              const swissMonthly = await getSwissMonthly(coords.lat, coords.lon, monthStartISO);
+              const { ingress, combustion, retro, velocity } = extractMonthlyChartEvents(swissMonthly);
+              const needIngress = !ingressEventsByMonth.has(monthKey);
+              const needCombustion = !combustionEventsByMonth.has(monthKey);
+              const needRetro = !retroEventsByMonth.has(monthKey);
+              const needVelocity = !velocityEventsByMonth.has(monthKey);
+
+              if (needIngress) {
+                setIngressEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, ingress));
+              }
+              if (needCombustion) {
+                setCombustionEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, combustion));
+              }
+              if (needRetro) {
+                setRetroEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, retro));
+              }
+              if (needVelocity) {
+                setVelocityEventsByMonth((prev) => applyMonthUpdate(prev, monthKey, velocity));
+              }
+            } catch (fallbackErr: unknown) {
+              append(`prefetch ${monthStart.toFormat("LLL yyyy")} error: ${formatError(fallbackErr)}`);
+            }
+          }
+        }
+      } finally {
+        // Only clear loading if this is still the current request
+        if (prefetchRequestRef.current === requestId) {
+          setPrefetchLoading(false);
         }
       }
     },
@@ -1900,6 +2003,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
       combustionEventsByMonth,
       getSwissMonthly,
       ingressEventsByMonth,
+      prefetchLoading,
       readCoordinates,
       retroEventsByMonth,
       tz,
