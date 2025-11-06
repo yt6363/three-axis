@@ -269,9 +269,18 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
                 # Return error for this specific month
                 return month_iso, {"ok": False, "error": str(exc)}
 
-        # Compute all uncached months concurrently
+        # Compute all uncached months with limited concurrency to prevent memory spikes
         import asyncio
-        tasks = [compute_one_month(month_iso) for month_iso in uncached_months]
+        from asyncio import Semaphore
+
+        # Limit to 2 concurrent computations to prevent OOM on Railway Hobby tier
+        semaphore = Semaphore(2)
+
+        async def compute_with_limit(month_iso: str):
+            async with semaphore:
+                return await compute_one_month(month_iso)
+
+        tasks = [compute_with_limit(month_iso) for month_iso in uncached_months]
         computed_results = await asyncio.gather(*tasks)
 
         for month_iso, result in computed_results:
