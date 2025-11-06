@@ -15,9 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "THREE AXIS",
+  title: "Three Axis",
   description:
     "Deep data points to navigate around the financial markets",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='58' dominant-baseline='middle' text-anchor='middle' font-family='Inter, sans-serif' font-size='70' font-weight='bold' fill='%2300FF00'>3X</text></svg>",
+  },
 };
 
 export default function RootLayout({
