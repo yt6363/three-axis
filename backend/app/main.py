@@ -273,8 +273,9 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
         import asyncio
         from asyncio import Semaphore
 
-        # Limit to 2 concurrent computations to prevent OOM on Railway Hobby tier
-        semaphore = Semaphore(2)
+        # Limit to 6 concurrent computations - balances speed with memory usage
+        # Railway Hobby: 512MB RAM, each computation ~50-80MB
+        semaphore = Semaphore(6)
 
         async def compute_with_limit(month_iso: str):
             async with semaphore:
