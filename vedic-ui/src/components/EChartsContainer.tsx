@@ -653,7 +653,7 @@ const EChartsContainerBase = forwardRef<EChartsContainerHandle, EChartsContainer
             formatter: (value: number) => `${value.toFixed(0)}°`,
           },
           splitLine: { lineStyle: { color: "#27272a", type: "dashed" } },
-          name: "Declination (°)",
+          name: "Cyclic Overlay (°)",
           nameTextStyle: { color: "#cbd5e1" },
         });
       }

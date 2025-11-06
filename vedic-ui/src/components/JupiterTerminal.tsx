@@ -2676,7 +2676,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{interval}</span>
                   </button>
                   {intervalDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-64 overflow-y-auto">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-96 overflow-y-auto">
                       {(["5m", "15m", "1h", "4h", "1d", "1wk", "1mo", "3mo"] as const).map((opt) => (
                         <button
                           key={opt}
@@ -2733,7 +2733,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{period}</span>
                   </button>
                   {periodDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-64 overflow-y-auto">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-96 overflow-y-auto">
                       {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const).map((opt) => (
                         <button
                           key={opt}
@@ -2971,7 +2971,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
 
           {/* Orbital Overlays Section */}
           <CollapsibleSection
-            title={isAdmin ? "Cyclic Overlays" : "CO"}
+            title="Cyclic Overlay"
             defaultOpen={false}
             disabled={!isPlus}
             onDisabledClick={() => {
