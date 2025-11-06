@@ -674,7 +674,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const [overlayPlotWeightedGeo, setOverlayPlotWeightedGeo] = useState(false);
   const [overlayPlotWeightedHelio, setOverlayPlotWeightedHelio] = useState(false);
   const [overlayWeightsInput, setOverlayWeightsInput] = useState(
-    "Sun=7, Moon=7, Mercury=6, Venus=5, Mars=3, Jupiter=2, Saturn=1"
+    "S=7, Mo=7, Me=6, V=5, Ma=3, J=2, Sa=1"
   );
   const [speedZoom, setSpeedZoom] = useState(1);
   const [forceZoom, setForceZoom] = useState(1);
@@ -3178,12 +3178,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                       disabled={!overlayUsesWeights}
                       rows={3}
                       className="h-24 w-full resize-none rounded-none border border-zinc-800/40 bg-black px-3 py-1.5 text-xs text-zinc-200 outline-none focus:border-green-500 disabled:border-zinc-800/40 disabled:text-zinc-600"
-                      placeholder={isAdmin ? "sun=7, moon=7, mercury=6" : "sun=7, moon=7…"}
+                      placeholder={isAdmin ? "S=7, Mo=7, Me=6" : "S=7, Mo=7…"}
                     />
                     <div className="mt-1 text-[0.6rem] text-zinc-500">
                       {isPlus
-                        ? "Separate entries with commas or new lines. Use full planet names (e.g. mercury=6)."
-                        : "Comma-separated planet=weight pairs (e.g. mercury=6)."}
+                        ? "Separate entries with commas or new lines. Use shortforms (e.g. Me=6, V=5)."
+                        : "Comma-separated pairs (e.g. Me=6, V=5)."}
                     </div>
                   </div>
                 </div>
@@ -3251,7 +3251,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                   disabled={!planetaryLinesEnabled}
                   className="w-full flex items-center justify-between border border-zinc-700/50 bg-black px-3 py-1.5 text-xs text-zinc-300 hover:border-zinc-600/70 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="uppercase tracking-wide text-zinc-500">Planet</span>
+                  <span className="uppercase tracking-wide text-zinc-500">DATA</span>
                   <span className="text-zinc-300">{planetaryLinesPlanet}</span>
                 </button>
                 {planetDropdown.open && planetaryLinesEnabled && (
