@@ -2648,7 +2648,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
             <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
               <span>PLAN</span>
               <div className="inline-flex overflow-hidden rounded-none border border-zinc-800/40">
-                {(["free", "plus", "admin"] as const).map((mode) => {
+                {(["free", "plus"] as const).map((mode) => {
                   const active = plan === mode;
                   return (
                     <button
