@@ -1893,8 +1893,8 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         return;
       }
 
-        // Use batch API for better performance (12 months per batch = 1 year chunks)
-        const BATCH_SIZE = 12;
+        // Use batch API for better performance (6 months per batch for Railway free tier)
+        const BATCH_SIZE = 6;
         for (let i = 0; i < monthsNeedingData.length; i += BATCH_SIZE) {
           // Check if request was cancelled
           if (prefetchRequestRef.current !== requestId) {
