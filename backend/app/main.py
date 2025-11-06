@@ -38,6 +38,8 @@ app.add_middleware(
 cache = ResponseCache(ttl_seconds=120)
 # Long-term cache for planetary events (1 hour - data doesn't change)
 events_cache = ResponseCache(ttl_seconds=3600)
+# Search cache (5 minutes - symbols don't change often)
+search_cache = ResponseCache(ttl_seconds=300)
 
 
 class SwissHorizonPayload(BaseModel):
@@ -102,10 +104,16 @@ async def search_symbols(
     q: str = Query(..., min_length=1, max_length=60, description="Search text"),
     limit: int = Query(8, ge=1, le=20, description="Maximum number of quotes"),
 ):
+    # Check cache first
+    cache_key = f"search|{q.lower()}|{limit}"
+    cached = search_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     params = {"q": q, "quotesCount": limit, "newsCount": 0}
     headers = {"User-Agent": "jupiter-terminal/1.0", "Accept": "application/json"}
     try:
-        async with httpx.AsyncClient(timeout=5) as client:
+        async with httpx.AsyncClient(timeout=2) as client:  # Reduced from 5s to 2s
             response = await client.get(
                 "https://query1.finance.yahoo.com/v1/finance/search",
                 params=params,
@@ -137,7 +145,9 @@ async def search_symbols(
         if len(quotes) >= limit:
             break
 
-    return {"quotes": quotes}
+    result = {"quotes": quotes}
+    search_cache.set(cache_key, result)
+    return result
 
 
 @app.get("/api/ohlc")

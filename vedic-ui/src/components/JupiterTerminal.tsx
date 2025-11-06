@@ -2436,7 +2436,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       } finally {
         setSearchBusy(false);
       }
-    }, 250);
+    }, 150);  // Reduced from 250ms to 150ms for faster search
 
     return () => {
       window.clearTimeout(handle);
