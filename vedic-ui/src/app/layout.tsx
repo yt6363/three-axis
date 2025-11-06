@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description:
     "Deep data points to navigate around the financial markets",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='48' y='60' dominant-baseline='middle' text-anchor='end' font-family='Georgia, serif' font-size='90' font-weight='bold' fill='%2300FF00'>3</text><text x='50' y='28' dominant-baseline='middle' text-anchor='start' font-family='Georgia, serif' font-size='45' font-weight='normal' fill='%2300FF00'>X</text></svg>",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='15' fill='%2322c55e'/><text x='50' y='65' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='60' font-weight='bold' fill='white'>3x</text></svg>",
   },
 };
 
