@@ -1893,8 +1893,8 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         return;
       }
 
-        // Use batch API for better performance (3 months per batch - ultra stable)
-        const BATCH_SIZE = 3;
+        // Use batch API for better performance (12 months per batch with backend concurrency limiting)
+        const BATCH_SIZE = 12;
         for (let i = 0; i < monthsNeedingData.length; i += BATCH_SIZE) {
           // Check if request was cancelled
           if (prefetchRequestRef.current !== requestId) {
