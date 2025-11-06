@@ -1737,7 +1737,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
 
   const overlayLabel = useCallback(
     (series: OrbitalOverlaySeries) => {
-      if (isPlus) return series.name;
+      if (isAdmin) return series.name;
       if (series.key === "weighted_geo_declination") return "W-GD";
       if (series.key === "weighted_helio_declination") return "W-HD";
       const primarySlug = series.objects[0];
@@ -1750,7 +1750,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       if (series.key.endsWith("_helio_dec")) return `${code} HD`;
       return code;
     },
-    [isPlus],
+    [isAdmin],
   );
 
   const candlesMemo = useMemo(() => candles, [candles]);
@@ -1828,7 +1828,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       const eventDt = DateTime.fromSeconds(eventTime, { zone: tz });
       const dateLabel = eventDt.toFormat("MMM dd");
       const timeLabel = eventDt.toFormat("HH:mm");
-      const fullLabel = isPlus
+      const fullLabel = isAdmin
         ? `${event.body} • ${dateLabel} ${timeLabel}`
         : `${formatPlanetCode(event.body)} • ${dateLabel} ${timeLabel}`;
       result.push({ time: snapped, color: "#f97316", label: fullLabel });
@@ -1843,7 +1843,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     isWithinRange,
     nearestCandleByDate,
     tz,
-    isPlus,
+    isAdmin,
   ]);
 
   const combustionEventLines = useMemo<OverlayEventLine[]>(() => {
@@ -1855,7 +1855,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       if (startRaw != null && isWithinRange(startRaw, eventRangeState)) {
         const snapped = nearestCandleByDate(startRaw, tz)?.time ?? startRaw;
         const eventDt = DateTime.fromSeconds(startRaw, { zone: tz });
-      const label = isPlus
+      const label = isAdmin
         ? `Combustion ${event.planet} Start • ${eventDt.toFormat("MMM dd HH:mm")}`
         : `${EVENT_CODES.combustion} ${formatPlanetCode(event.planet)}↑ • ${eventDt.toFormat("MMM dd HH:mm")}`;
         result.push({ time: snapped, color: "#ef4444", label });
@@ -1864,7 +1864,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       if (endRaw != null && isWithinRange(endRaw, eventRangeState)) {
         const snapped = nearestCandleByDate(endRaw, tz)?.time ?? endRaw;
         const eventDt = DateTime.fromSeconds(endRaw, { zone: tz });
-        const label = isPlus
+        const label = isAdmin
           ? `Combustion ${event.planet} End • ${eventDt.toFormat("MMM dd HH:mm")}`
           : `${EVENT_CODES.combustion} ${formatPlanetCode(event.planet)}↓ • ${eventDt.toFormat("MMM dd HH:mm")}`;
         result.push({ time: snapped, color: "#ef4444", label });
@@ -1880,7 +1880,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     isWithinRange,
     nearestCandleByDate,
     tz,
-    isPlus,
+    isAdmin,
   ]);
 
   const retroEventLines = useMemo<OverlayEventLine[]>(() => {
@@ -1892,7 +1892,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       if (startRaw != null && isWithinRange(startRaw, eventRangeState)) {
         const snapped = nearestCandleByDate(startRaw, tz)?.time ?? startRaw;
         const eventDt = DateTime.fromSeconds(startRaw, { zone: tz });
-      const label = isPlus
+      const label = isAdmin
         ? `Retro ${event.planet} Start • ${eventDt.toFormat("MMM dd HH:mm")}`
         : `${EVENT_CODES.retro} ${formatPlanetCode(event.planet)}↑ • ${eventDt.toFormat("MMM dd HH:mm")}`;
         result.push({ time: snapped, color: "#22d3ee", label });
@@ -1901,7 +1901,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       if (endRaw != null && isWithinRange(endRaw, eventRangeState)) {
         const snapped = nearestCandleByDate(endRaw, tz)?.time ?? endRaw;
         const eventDt = DateTime.fromSeconds(endRaw, { zone: tz });
-        const label = isPlus
+        const label = isAdmin
           ? `Retro ${event.planet} End • ${eventDt.toFormat("MMM dd HH:mm")}`
           : `${EVENT_CODES.retro} ${formatPlanetCode(event.planet)}↓ • ${eventDt.toFormat("MMM dd HH:mm")}`;
         result.push({ time: snapped, color: "#22d3ee", label });
@@ -1917,7 +1917,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     isWithinRange,
     nearestCandleByDate,
     tz,
-    isPlus,
+    isAdmin,
   ]);
 
   const velocityEventLines = useMemo<OverlayEventLine[]>(() => {
@@ -1931,7 +1931,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       const snapped = nearestCandleByDate(eventTime, tz)?.time ?? eventTime;
       const eventDt = DateTime.fromSeconds(eventTime, { zone: tz });
       const suffix = event.kind === "max" ? "Max" : "Min";
-      const label = isPlus
+      const label = isAdmin
         ? `Velocity ${event.planet} ${suffix} • ${eventDt.toFormat("MMM dd HH:mm")}`
         : `${EVENT_CODES.velocity} ${formatPlanetCode(event.planet)} ${suffix} • ${eventDt.toFormat("MMM dd HH:mm")}`;
       result.push({ time: snapped, color: "#a855f7", label });
@@ -1946,7 +1946,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     isWithinRange,
     nearestCandleByDate,
     tz,
-    isPlus,
+    isAdmin,
   ]);
 
   const lagnaEventLines = useMemo<OverlayEventLine[]>(() => {
@@ -2149,8 +2149,9 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
         const planetaryLines: PlanetaryLineSeries[] = [];
 
         if (baseSeries.length > 0) {
+          const planetName = isAdmin ? planetaryLinesPlanet : PLANET_CODES[planetaryLinesPlanet];
           planetaryLines.push({
-            name: `${planetaryLinesPlanet}`,
+            name: planetName,
             data: baseSeries,
           });
 
@@ -2170,7 +2171,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
               if (minUpValue > chartHigh + priceStep) break;
 
               planetaryLines.push({
-                name: `${planetaryLinesPlanet} + ${step}×${harmonicLabel}`,
+                name: `${planetName} + ${step}×${harmonicLabel}`,
                 data: baseSeries.map((point) => ({
                   time: point.time,
                   value: point.value + offset,
@@ -2184,7 +2185,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
               if (maxDownValue < chartLow - priceStep) break;
 
               planetaryLines.push({
-                name: `${planetaryLinesPlanet} - ${step}×${harmonicLabel}`,
+                name: `${planetName} - ${step}×${harmonicLabel}`,
                 data: baseSeries.map((point) => ({
                   time: point.time,
                   value: point.value - offset,
@@ -3329,7 +3330,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
 
               {planetaryLinesEnabled && (
                 <div className="rounded-none border border-zinc-800/40 bg-zinc-950/40 p-2 text-[0.65rem] text-zinc-400">
-                  Slanting time-series lines tracking {planetaryLinesPlanet} longitude over history
+                  Slanting time-series lines tracking {isAdmin ? planetaryLinesPlanet : PLANET_CODES[planetaryLinesPlanet]} longitude over history
                 </div>
               )}
             </div>

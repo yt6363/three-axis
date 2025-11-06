@@ -63,7 +63,7 @@ export function CollapsibleSection({
           />
         </button>
       </Collapsible.Trigger>
-      <Collapsible.Content className="overflow-hidden data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown">
+      <Collapsible.Content className="overflow-visible data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown">
         <div className="px-4 py-3 bg-zinc-950/20 border border-transparent border-t-zinc-800/30 rounded-none">
           {children}
         </div>

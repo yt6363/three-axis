@@ -1454,7 +1454,7 @@ export default function VedicTerminalIngressApp() {
   }, [timezoneMenuOpen]);
 
   const [startLocal, setStartLocal] = useState(() =>
-    DateTime.now().toISO({ includeOffset: false }).slice(0, 16)
+    DateTime.now().startOf('day').toISO({ includeOffset: false }).slice(0, 16)
   );
   const [ascHours, setAscHours] = useState(24);
   const [log, setLog] = useState<string[]>([]);
