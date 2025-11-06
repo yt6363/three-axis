@@ -2676,7 +2676,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{interval}</span>
                   </button>
                   {intervalDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-48 overflow-y-auto">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-64 overflow-y-auto">
                       {(["5m", "15m", "1h", "4h", "1d", "1wk", "1mo", "3mo"] as const).map((opt) => (
                         <button
                           key={opt}
@@ -2733,7 +2733,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                     <span className="text-zinc-300" style={{ fontSize: '0.7rem' }}>{period}</span>
                   </button>
                   {periodDropdown.open && (
-                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-48 overflow-y-auto">
+                    <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-64 overflow-y-auto">
                       {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const).map((opt) => (
                         <button
                           key={opt}
@@ -2971,7 +2971,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
 
           {/* Orbital Overlays Section */}
           <CollapsibleSection
-            title={isAdmin ? "Orbital Overlays" : "OBO"}
+            title={isAdmin ? "Cyclic Overlays" : "CO"}
             defaultOpen={false}
             disabled={!isPlus}
             onDisabledClick={() => {
@@ -3252,7 +3252,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                   className="w-full flex items-center justify-between border border-zinc-700/50 bg-black px-3 py-1.5 text-xs text-zinc-300 hover:border-zinc-600/70 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="uppercase tracking-wide text-zinc-500">DATA</span>
-                  <span className="text-zinc-300">{planetaryLinesPlanet}</span>
+                  <span className="text-zinc-300">{isAdmin ? planetaryLinesPlanet : PLANET_CODES[planetaryLinesPlanet]}</span>
                 </button>
                 {planetDropdown.open && planetaryLinesEnabled && (
                   <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-60 overflow-y-auto">
@@ -3266,7 +3266,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                           planetaryLinesPlanet === planet ? "bg-green-900/30 text-green-300" : "text-zinc-200 hover:bg-zinc-900"
                         )}
                       >
-                        {planet}
+                        {isAdmin ? planet : PLANET_CODES[planet]}
                       </button>
                     ))}
                   </div>

@@ -739,7 +739,7 @@ const EChartsContainerBase = forwardRef<EChartsContainerHandle, EChartsContainer
       return {
         backgroundColor,
         animation: false,
-        grid: { left: "8%", right: "6%", top: 20, bottom: 40 },
+        grid: { left: "8%", right: "6%", top: 35, bottom: 40 },
         xAxis: {
           type: "time",
           min: xAxisMin,
