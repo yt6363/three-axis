@@ -1893,8 +1893,8 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         return;
       }
 
-        // Use batch API for better performance (max 60 months per batch)
-        const BATCH_SIZE = 60;
+        // Use batch API for better performance (12 months per batch = 1 year chunks)
+        const BATCH_SIZE = 12;
         for (let i = 0; i < monthsNeedingData.length; i += BATCH_SIZE) {
           // Check if request was cancelled
           if (prefetchRequestRef.current !== requestId) {
@@ -1904,9 +1904,11 @@ const [velocityLoading, setVelocityLoading] = useState(false);
 
           const batch = monthsNeedingData.slice(i, i + BATCH_SIZE);
           const monthStartISOs = batch.map((m) => m.monthStartISO);
+          const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(monthsNeedingData.length / BATCH_SIZE);
 
           try {
-            append(`fetching ${batch.length} months in batch (${batch[0].month.toFormat("MMM yyyy")} - ${batch[batch.length - 1].month.toFormat("MMM yyyy")})...`);
+            append(`[${batchNum}/${totalBatches}] fetching ${batch.length} months (${batch[0].month.toFormat("MMM yyyy")} - ${batch[batch.length - 1].month.toFormat("MMM yyyy")})...`);
 
             const batchResponse = await fetchSwissMonthlyBatch({
               lat: coords.lat,
