@@ -39,8 +39,6 @@ const PLANET_DISPLAY_CODES: Record<string, string> = {
   Mars: "Ma",
   Jupiter: "J",
   Saturn: "Sa",
-  Rahu: "NN",  // North Node
-  Ketu: "SN",  // South Node
   Neptune: "N",
   Uranus: "U",
   Pluto: "P",
@@ -989,8 +987,6 @@ const STATION_PLANETS = [
   "Uranus",
   "Neptune",
   "Pluto",
-  "Rahu",  // North Node
-  "Ketu",  // South Node
 ] as const;
 
 type StationPlanetName = (typeof STATION_PLANETS)[number];

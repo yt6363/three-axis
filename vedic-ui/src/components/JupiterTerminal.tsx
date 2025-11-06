@@ -77,14 +77,12 @@ function hasSignChange(event: { from: string; to: string }): boolean {
 
 const PLANET_CODES: Record<string, string> = {
   Sun: "S",
-  Moon: "M",
+  Moon: "Mo",
   Mercury: "Me",
   Venus: "V",
-  Mars: "M",
+  Mars: "Ma",
   Jupiter: "J",
-  Saturn: "St",
-  Rahu: "R",
-  Ketu: "K",
+  Saturn: "Sa",
   Neptune: "N",
   Uranus: "U",
   Pluto: "P",
@@ -676,7 +674,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const [overlayPlotWeightedGeo, setOverlayPlotWeightedGeo] = useState(false);
   const [overlayPlotWeightedHelio, setOverlayPlotWeightedHelio] = useState(false);
   const [overlayWeightsInput, setOverlayWeightsInput] = useState(
-    "Sun=7, Moon=7, Mercury=6, Venus=5, Mars=3, Jupiter=2, Saturn=1, Rahu=1, Ketu=1"
+    "Sun=7, Moon=7, Mercury=6, Venus=5, Mars=3, Jupiter=2, Saturn=1"
   );
   const [speedZoom, setSpeedZoom] = useState(1);
   const [forceZoom, setForceZoom] = useState(1);
@@ -2351,6 +2349,9 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       setUploadName(null);
       try {
         const data = await fetchOHLC({ symbol, interval, period });
+        if (!data || data.length === 0) {
+          throw new Error("No data available for this symbol/period combination");
+        }
         setCandles(data);
         setActiveSymbol(symbol);
         setDataTitle(`${symbol} • ${interval} • ${period}`);
@@ -3239,7 +3240,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                   checked={planetaryLinesEnabled}
                   onChange={(e) => setPlanetaryLinesEnabled(e.target.checked)}
                 />
-                <span>Enable planetary lines</span>
+                <span>Enable data lines</span>
               </label>
 
               {/* Planet selection */}
@@ -3363,37 +3364,44 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       {/* Upgrade Modal */}
       {showUpgradeModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
           onClick={() => setShowUpgradeModal(false)}
         >
           <div
-            className="w-full max-w-md border border-zinc-800/40 bg-zinc-900 p-6"
-            style={{ borderRadius: 0, boxShadow: 'none' }}
+            className="w-full max-w-md border border-zinc-800 bg-black p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-4 text-lg font-semibold text-zinc-100">
-              Upgrade to PLUS to unlock {upgradeFeature}.
+            <h2 className="mb-4 font-mono text-sm tracking-wide uppercase text-green-400">
+              Upgrade Required
             </h2>
-            <div className="mb-6 space-y-2 text-sm text-zinc-300">
-              <p className="font-medium text-zinc-200">PLUS includes:</p>
-              <ul className="list-inside list-disc space-y-1 text-zinc-400">
+            <p className="mb-6 font-mono text-[10px] text-zinc-500">
+              {upgradeFeature} requires premium access.
+            </p>
+            <div className="mb-6 space-y-2 font-mono text-[10px] text-zinc-600">
+              <p className="text-zinc-400 uppercase tracking-wide">Premium Features</p>
+              <ul className="list-inside list-disc space-y-1 pl-1">
+                <li>Advanced data events</li>
+                <li>Real-time market data</li>
                 <li>Download all data as CSV</li>
                 <li>Navigate to any month</li>
-                <li>OBO (Orbital overlay analysis)</li>
-                <li>PL (Planetary lines)</li>
-                <li>Advanced features</li>
+                <li>Custom indicators</li>
+                <li>Priority support</li>
               </ul>
             </div>
-            <p className="mb-6 text-sm text-zinc-400">
-              Click on the PLUS button at the top to upgrade!
-            </p>
-            <button
-              onClick={() => setShowUpgradeModal(false)}
-              className="w-full rounded-none bg-blue-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-              style={{ borderRadius: 0 }}
-            >
-              OK
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="flex-1 bg-green-600 border border-green-600 px-4 py-2 font-mono text-[10px] uppercase tracking-wide text-black transition-colors hover:bg-green-700"
+              >
+                Upgrade
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="flex-1 border border-zinc-800 bg-black px-4 py-2 font-mono text-[10px] uppercase tracking-wide text-zinc-400 transition-colors hover:bg-zinc-900"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
