@@ -657,6 +657,14 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const velocityEnabled = useDebouncedValue(velocityEnabledInput);
   const lagnaEnabled = useDebouncedValue(lagnaEnabledInput);
   const moonEnabled = useDebouncedValue(moonEnabledInput);
+
+  // Defer heavy event computations to prevent UI blocking
+  const deferredIngressEnabled = useDeferredValue(ingressEnabled);
+  const deferredCombustionEnabled = useDeferredValue(combustionEnabled);
+  const deferredRetroEnabled = useDeferredValue(retroEnabled);
+  const deferredVelocityEnabled = useDeferredValue(velocityEnabled);
+  const deferredLagnaEnabled = useDeferredValue(lagnaEnabled);
+  const deferredMoonEnabled = useDeferredValue(moonEnabled);
   // Changed to array for multi-select dropdown
   const [selectedPlanets, setSelectedPlanets] = useState<string[]>([
     "Sun",
@@ -1546,7 +1554,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   }, [eventRangeState, includePlanet, ingressEnabled, ingressEvents, ingressPlanets, isPlus, isWithinRange, nearestCandle, tz]);
 
   const combustionMarkers = useMemo<SeriesMarker<Time>[]>(() => {
-    if (!combustionEnabled) return [];
+    if (!deferredCombustionEnabled) return [];
     const markers: SeriesMarker<Time>[] = [];
     combustionEvents.forEach((event) => {
       if (!includePlanet(event.planet, combustionPlanets)) return;
@@ -1587,7 +1595,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   }, [combustionEnabled, combustionEvents, combustionPlanets, eventRangeState, includePlanet, isPlus, isWithinRange, nearestCandle, tz]);
 
   const retroMarkers = useMemo<SeriesMarker<Time>[]>(() => {
-    if (!retroEnabled) return [];
+    if (!deferredRetroEnabled) return [];
     const markers: SeriesMarker<Time>[] = [];
     retroEvents.forEach((event) => {
       if (!includePlanet(event.planet, retroPlanets)) return;
@@ -1628,7 +1636,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   }, [eventRangeState, includePlanet, isPlus, isWithinRange, nearestCandle, retroEnabled, retroEvents, retroPlanets, tz]);
 
   const velocityMarkers = useMemo<SeriesMarker<Time>[]>(() => {
-    if (!velocityEnabled) return [];
+    if (!deferredVelocityEnabled) return [];
     const markers: SeriesMarker<Time>[] = [];
     velocityEvents.forEach((event) => {
       if (!includePlanet(event.planet, velocityPlanets)) return;
@@ -1815,7 +1823,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   }, [orbitalSeries, overlayLabel]);
 
   const ingressEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!ingressEnabled) return [];
+    if (!deferredIngressEnabled) return [];
     const result: OverlayEventLine[] = [];
     ingressEvents.forEach((event) => {
       if (!hasSignChange(event)) return;
@@ -1835,7 +1843,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     });
     return result;
   }, [
-    ingressEnabled,
+    deferredIngressEnabled,
     ingressEvents,
     ingressPlanets,
     includePlanet,
@@ -1847,7 +1855,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   ]);
 
   const combustionEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!combustionEnabled) return [];
+    if (!deferredCombustionEnabled) return [];
     const result: OverlayEventLine[] = [];
     combustionEvents.forEach((event) => {
       if (!includePlanet(event.planet, combustionPlanets)) return;
@@ -1872,7 +1880,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     });
     return result;
   }, [
-    combustionEnabled,
+    deferredCombustionEnabled,
     combustionEvents,
     combustionPlanets,
     includePlanet,
@@ -1884,7 +1892,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   ]);
 
   const retroEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!retroEnabled) return [];
+    if (!deferredRetroEnabled) return [];
     const result: OverlayEventLine[] = [];
     retroEvents.forEach((event) => {
       if (!includePlanet(event.planet, retroPlanets)) return;
@@ -1909,7 +1917,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     });
     return result;
   }, [
-    retroEnabled,
+    deferredRetroEnabled,
     retroEvents,
     retroPlanets,
     includePlanet,
@@ -1921,7 +1929,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   ]);
 
   const velocityEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!velocityEnabled) return [];
+    if (!deferredVelocityEnabled) return [];
     const result: OverlayEventLine[] = [];
     velocityEvents.forEach((event) => {
       if (!includePlanet(event.planet, velocityPlanets)) return;
@@ -1938,7 +1946,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     });
     return result;
   }, [
-    velocityEnabled,
+    deferredVelocityEnabled,
     velocityEvents,
     velocityPlanets,
     includePlanet,
@@ -1950,7 +1958,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   ]);
 
   const lagnaEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!allowShortInterval || !lagnaEnabled) return [];
+    if (!allowShortInterval || !deferredLagnaEnabled) return [];
     const result: OverlayEventLine[] = [];
     lagnaEvents.forEach((event) => {
       const eventTime = toUtcSecondsFromEvent(event.timeISO, tz);
@@ -1964,7 +1972,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     return result;
   }, [
     allowShortInterval,
-    lagnaEnabled,
+    deferredLagnaEnabled,
     lagnaEvents,
     lagnaRangeState,
     nearestCandle,
@@ -1974,7 +1982,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   ]);
 
   const moonEventLines = useMemo<OverlayEventLine[]>(() => {
-    if (!allowShortInterval || !moonEnabled) return [];
+    if (!allowShortInterval || !deferredMoonEnabled) return [];
     const result: OverlayEventLine[] = [];
     moonEvents.forEach((event) => {
       const eventTime = toUtcSecondsFromEvent(event.timeISO, tz);
@@ -1987,7 +1995,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     return result;
   }, [
     allowShortInterval,
-    moonEnabled,
+    deferredMoonEnabled,
     moonEvents,
     lagnaRangeState,
     nearestCandle,
@@ -1999,11 +2007,11 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const overlayEventLinesMemo = useMemo<OverlayEventLine[]>(() => {
     const cacheKey = JSON.stringify({
       ingressEnabled,
-      combustionEnabled,
-      retroEnabled,
-      velocityEnabled,
-      lagnaEnabled,
-      moonEnabled,
+      deferredCombustionEnabled,
+      deferredRetroEnabled,
+      deferredVelocityEnabled,
+      deferredLagnaEnabled,
+      deferredMoonEnabled,
       ingressEventsKey,
       combustionEventsKey,
       retroEventsKey,
@@ -2037,11 +2045,11 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     return grouped;
   }, [
     ingressEnabled,
-    combustionEnabled,
-    retroEnabled,
-    velocityEnabled,
-    lagnaEnabled,
-    moonEnabled,
+    deferredCombustionEnabled,
+    deferredRetroEnabled,
+    deferredVelocityEnabled,
+    deferredLagnaEnabled,
+    deferredMoonEnabled,
     ingressEventLines,
     combustionEventLines,
     retroEventLines,
