@@ -1893,8 +1893,8 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         return;
       }
 
-        // Use batch API for better performance (6 months per batch - stable on Railway Hobby tier)
-        const BATCH_SIZE = 6;
+        // Use batch API for better performance (3 months per batch - ultra stable)
+        const BATCH_SIZE = 3;
         for (let i = 0; i < monthsNeedingData.length; i += BATCH_SIZE) {
           // Check if request was cancelled
           if (prefetchRequestRef.current !== requestId) {
