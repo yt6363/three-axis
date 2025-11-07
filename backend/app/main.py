@@ -5,8 +5,8 @@ from functools import partial
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
-from typing import List
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from typing import List, Literal
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning, module="yfinance")
@@ -58,6 +58,7 @@ class SwissHorizonPayload(BaseModel):
     start_local_iso: str = Field(alias="startLocalISO", min_length=8)
     asc_hours: int = Field(alias="ascHours", ge=1, le=168)
     moon_days: float = Field(alias="moonDays", ge=1/24, le=120)
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
 
 
 class SwissMonthlyPayload(BaseModel):
@@ -67,6 +68,7 @@ class SwissMonthlyPayload(BaseModel):
     lon: float
     tz: str
     month_start_iso: str = Field(alias="monthStartISO", min_length=7)
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
 
 
 class SwissMonthlyBatchPayload(BaseModel):
@@ -76,6 +78,7 @@ class SwissMonthlyBatchPayload(BaseModel):
     lon: float
     tz: str
     month_start_isos: List[str] = Field(alias="monthStartISOs", min_length=1, max_length=60)
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
 
 
 class OrbitalOverlayPayload(BaseModel):
@@ -211,6 +214,7 @@ async def swiss_horizon(payload: SwissHorizonPayload):
             payload.start_local_iso,
             payload.asc_hours,
             payload.moon_days,
+            payload.ayanamsa,  # Pass ayanamsa parameter
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -221,8 +225,8 @@ async def swiss_horizon(payload: SwissHorizonPayload):
 
 @app.post("/api/swiss/monthly")
 async def swiss_monthly(payload: SwissMonthlyPayload):
-    # Check cache first
-    cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{payload.month_start_iso}"
+    # Check cache first (include ayanamsa in key)
+    cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{payload.month_start_iso}|{payload.ayanamsa}"
     cached = events_cache.get(cache_key)
     if cached is not None:
         return cached
@@ -234,6 +238,7 @@ async def swiss_monthly(payload: SwissMonthlyPayload):
             payload.lon,
             payload.tz,
             payload.month_start_iso,
+            payload.ayanamsa,  # Pass ayanamsa parameter
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -257,14 +262,14 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
     # Check which months are already cached (DB first, then memory)
     uncached_months = []
     for month_iso in payload.month_start_isos:
-        # Try database first (permanent cache)
-        db_cached = await get_cached_month(payload.lat, payload.lon, payload.tz, month_iso)
+        # Try database first (permanent cache) - include ayanamsa
+        db_cached = await get_cached_month(payload.lat, payload.lon, payload.tz, month_iso, payload.ayanamsa)
         if db_cached is not None:
             results[month_iso] = {"ok": True, **db_cached}
             continue
 
-        # Try memory cache (faster but temporary)
-        cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
+        # Try memory cache (faster but temporary) - include ayanamsa in key
+        cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}|{payload.ayanamsa}"
         cached = events_cache.get(cache_key)
         if cached is not None:
             results[month_iso] = cached
@@ -281,13 +286,14 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
                     payload.lon,
                     payload.tz,
                     month_iso,
+                    payload.ayanamsa,  # Pass ayanamsa parameter
                 )
                 result = {"ok": True, **data}
 
-                # Store in both memory cache and database
-                cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
+                # Store in both memory cache and database - include ayanamsa
+                cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}|{payload.ayanamsa}"
                 events_cache.set(cache_key, result)
-                await cache_month(payload.lat, payload.lon, payload.tz, month_iso, data)
+                await cache_month(payload.lat, payload.lon, payload.tz, month_iso, data, payload.ayanamsa)
 
                 return month_iso, result
             except Exception as exc:

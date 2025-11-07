@@ -18,6 +18,10 @@ except ImportError as exc:  # pragma: no cover - hard failure surfaced in API la
     ) from exc
 
 
+# Thread-local storage for ayanamsa setting
+_thread_local = threading.local()
+
+
 RASHI = [
     "Mesha",
     "Vrishabha",
@@ -207,12 +211,45 @@ def _initialise_once() -> None:
     with _INIT_LOCK:
         if _INITIALISED:
             return
-        swe.set_sid_mode(swe.SIDM_RAMAN, 0, 0)
+        # Don't set a global ayanamsa - it will be set per-calculation
         for candidate in _candidate_ephe_paths():
             if candidate.is_dir():
                 swe.set_ephe_path(str(candidate))
                 break
         _INITIALISED = True
+
+
+# Ayanamsa system mapping
+AYANAMSA_SYSTEMS = {
+    "lahiri": swe.SIDM_LAHIRI,       # 24° 13' for 2025 (Government of India standard)
+    "raman": swe.SIDM_RAMAN,         # 22° 46' for 2025 (BV Raman system)
+    "tropical": None,                # 0° (Western tropical, no ayanamsa)
+}
+
+
+def _get_current_ayanamsa() -> str:
+    """Get the current thread's ayanamsa setting (defaults to Lahiri)."""
+    return getattr(_thread_local, 'ayanamsa', 'lahiri')
+
+
+def _set_ayanamsa(ayanamsa: str):
+    """Set the ayanamsa for the current thread."""
+    _thread_local.ayanamsa = ayanamsa
+
+
+def _get_calc_flags() -> int:
+    """Get calculation flags for the current thread's ayanamsa system."""
+    _initialise_once()
+    ayanamsa = _get_current_ayanamsa()
+
+    if ayanamsa == "tropical":
+        # Tropical system - no sidereal correction
+        return swe.FLG_MOSEPH
+    else:
+        # Sidereal system - set the ayanamsa
+        sid_mode = AYANAMSA_SYSTEMS.get(ayanamsa, swe.SIDM_LAHIRI)
+        swe.set_sid_mode(sid_mode, 0, 0)
+        return swe.FLG_MOSEPH | swe.FLG_SIDEREAL
 
 
 def _mod360(value: float) -> float:
@@ -272,21 +309,31 @@ def _julday(dt: datetime) -> float:
 
 
 def _ascendant_sidereal_deg(dt: datetime, lat: float, lon: float) -> float:
+    """Calculate ascendant using the current thread's ayanamsa system."""
+    ayanamsa = _get_current_ayanamsa()
     jd = _julday(dt)
     try:
         _, ascmc = swe.houses(jd, lat, lon, b"P")
     except swe.Error:
         return float("nan")
     asc_tropical = ascmc[0]
-    ay = swe.get_ayanamsa_ut(jd)
-    return _mod360(asc_tropical - ay)
+
+    if ayanamsa == "tropical":
+        # Tropical system - return tropical ascendant
+        return _mod360(asc_tropical)
+    else:
+        # Sidereal system - subtract ayanamsa
+        _ = _get_calc_flags()  # Ensure ayanamsa is set
+        ay = swe.get_ayanamsa_ut(jd)
+        return _mod360(asc_tropical - ay)
 
 
 def _planet_lon_speed(
     dt: datetime, planet: int, with_speed: bool = False
 ) -> Tuple[float, Optional[float]]:
+    """Calculate planetary longitude using the current thread's ayanamsa system."""
     jd = _julday(dt)
-    flags = swe.FLG_MOSEPH | swe.FLG_SIDEREAL
+    flags = _get_calc_flags()
     if with_speed:
         flags |= swe.FLG_SPEED
     try:
@@ -847,8 +894,11 @@ def compute_horizon(
     start_local_iso: str,
     asc_hours: int,
     moon_days: int,
+    ayanamsa: str = "lahiri",
 ) -> Dict[str, object]:
+    """Compute horizon events using the specified ayanamsa system."""
     _initialise_once()
+    _set_ayanamsa(ayanamsa)  # Set for this thread
     start_local = _from_iso_local(start_local_iso, tz_name)
     start_utc = _to_utc(start_local)
     asc_end = start_utc + timedelta(hours=asc_hours)
@@ -940,8 +990,19 @@ def compute_monthly(
     lon: float,
     tz_name: str,
     month_start_iso: str,
+    ayanamsa: str = "lahiri",
 ) -> Dict[str, object]:
+    """Compute monthly planetary events using the specified ayanamsa system.
+
+    Args:
+        lat: Latitude
+        lon: Longitude
+        tz_name: Timezone name (e.g., 'Asia/Kolkata')
+        month_start_iso: Month start in ISO format (e.g., '2025-01-01')
+        ayanamsa: Ayanamsa system ('lahiri', 'raman', or 'tropical')
+    """
     _initialise_once()
+    _set_ayanamsa(ayanamsa)  # Set for this thread
     month_start_local = _from_iso_local(month_start_iso, tz_name).replace(hour=0, minute=0, second=0, microsecond=0)
     month_end_local = _add_month(month_start_local, 1)
     window_start = month_start_local - timedelta(days=45)

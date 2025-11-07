@@ -25,9 +25,9 @@ async def get_pool() -> Optional[asyncpg.Pool]:
     return _pool
 
 
-def location_hash(lat: float, lon: float, tz: str) -> str:
-    """Create a hash for location+timezone for efficient lookups."""
-    key = f"{lat:.4f}|{lon:.4f}|{tz}"
+def location_hash(lat: float, lon: float, tz: str, ayanamsa: str = "lahiri") -> str:
+    """Create a hash for location+timezone+ayanamsa for efficient lookups."""
+    key = f"{lat:.4f}|{lon:.4f}|{tz}|{ayanamsa}"
     return hashlib.md5(key.encode()).hexdigest()
 
 
@@ -39,35 +39,41 @@ async def init_db():
         return
 
     async with pool.acquire() as conn:
+        # Drop old table if exists (since we're changing the schema)
+        await conn.execute("DROP TABLE IF EXISTS planetary_events CASCADE;")
+
+        # Create new table with ayanamsa column
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS planetary_events (
                 id SERIAL PRIMARY KEY,
                 location_hash VARCHAR(32) NOT NULL,
+                ayanamsa VARCHAR(20) NOT NULL,
                 month_start VARCHAR(7) NOT NULL,
                 data JSONB NOT NULL,
                 computed_at TIMESTAMP DEFAULT NOW(),
-                UNIQUE(location_hash, month_start)
+                UNIQUE(location_hash, ayanamsa, month_start)
             );
 
-            CREATE INDEX IF NOT EXISTS idx_location_month
-            ON planetary_events(location_hash, month_start);
+            CREATE INDEX IF NOT EXISTS idx_location_ayanamsa_month
+            ON planetary_events(location_hash, ayanamsa, month_start);
         """)
 
 
 async def get_cached_month(
-    lat: float, lon: float, tz: str, month_start_iso: str
+    lat: float, lon: float, tz: str, month_start_iso: str, ayanamsa: str = "lahiri"
 ) -> Optional[Dict[str, Any]]:
     """Get cached planetary events for a specific month."""
     pool = await get_pool()
     if pool is None:
         return None
 
-    loc_hash = location_hash(lat, lon, tz)
+    loc_hash = location_hash(lat, lon, tz, ayanamsa)
 
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
-            "SELECT data FROM planetary_events WHERE location_hash = $1 AND month_start = $2",
+            "SELECT data FROM planetary_events WHERE location_hash = $1 AND ayanamsa = $2 AND month_start = $3",
             loc_hash,
+            ayanamsa,
             month_start_iso[:7],  # Only YYYY-MM
         )
 
@@ -77,24 +83,25 @@ async def get_cached_month(
 
 
 async def cache_month(
-    lat: float, lon: float, tz: str, month_start_iso: str, data: Dict[str, Any]
+    lat: float, lon: float, tz: str, month_start_iso: str, data: Dict[str, Any], ayanamsa: str = "lahiri"
 ):
     """Cache planetary events for a specific month."""
     pool = await get_pool()
     if pool is None:
         return  # No database - skip caching
 
-    loc_hash = location_hash(lat, lon, tz)
+    loc_hash = location_hash(lat, lon, tz, ayanamsa)
 
     async with pool.acquire() as conn:
         await conn.execute(
             """
-            INSERT INTO planetary_events (location_hash, month_start, data)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (location_hash, month_start)
-            DO UPDATE SET data = $3, computed_at = NOW()
+            INSERT INTO planetary_events (location_hash, ayanamsa, month_start, data)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (location_hash, ayanamsa, month_start)
+            DO UPDATE SET data = $4, computed_at = NOW()
             """,
             loc_hash,
+            ayanamsa,
             month_start_iso[:7],
             json.dumps(data),
         )
