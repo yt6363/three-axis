@@ -18,8 +18,19 @@ export type Interval =
   | "3mo";
 
 export type Period = "5d" | "1mo" | "3mo" | "6mo" | "1y" | "2y" | "5y" | "max";
+export type AyanamsaType = "lahiri" | "raman" | "tropical";
 
 const DEFAULT_PERIOD: Period = "1y";
+
+// Helper function to get ayanamsa preference from localStorage
+export function getAyanamsaPreference(): AyanamsaType {
+  if (typeof window === "undefined") return "lahiri"; // SSR fallback
+  const saved = localStorage.getItem("ayanamsa");
+  if (saved === "lahiri" || saved === "raman" || saved === "tropical") {
+    return saved;
+  }
+  return "lahiri"; // Default
+}
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE?.replace(/\/$/, "") ?? "http://localhost:8000";
@@ -70,6 +81,7 @@ type SwissHorizonRequest = {
   startLocalISO: string;
   ascHours: number;
   moonDays: number;
+  ayanamsa?: "lahiri" | "raman" | "tropical";
 };
 
 export type SwissHorizonResponse = {
@@ -86,6 +98,7 @@ type SwissMonthlyRequest = {
   lon: number;
   tz: string;
   monthStartISO: string;
+  ayanamsa?: "lahiri" | "raman" | "tropical";
 };
 
 export type SwissMonthlyResponse = {
@@ -140,6 +153,7 @@ export type SwissMonthlyBatchRequest = {
   lon: number;
   tz: string;
   monthStartISOs: string[];
+  ayanamsa?: "lahiri" | "raman" | "tropical";
 };
 
 export type SwissMonthlyBatchResponse = {

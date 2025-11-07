@@ -10,12 +10,15 @@ interface SubscriptionData {
   cancelAtPeriodEnd: boolean;
 }
 
+type AyanamsaType = "lahiri" | "raman" | "tropical";
+
 export default function AccountPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [ayanamsa, setAyanamsa] = useState<AyanamsaType>("lahiri");
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -28,6 +31,20 @@ export default function AccountPage() {
       fetchSubscription();
     }
   }, [user]);
+
+  // Load ayanamsa preference from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("ayanamsa");
+    if (saved && (saved === "lahiri" || saved === "raman" || saved === "tropical")) {
+      setAyanamsa(saved as AyanamsaType);
+    }
+  }, []);
+
+  // Save ayanamsa preference to localStorage when changed
+  const handleAyanamsaChange = (newAyanamsa: AyanamsaType) => {
+    setAyanamsa(newAyanamsa);
+    localStorage.setItem("ayanamsa", newAyanamsa);
+  };
 
   const fetchSubscription = async () => {
     try {
@@ -140,6 +157,126 @@ export default function AccountPage() {
         >
           SIGN OUT
         </button>
+      </div>
+
+      {/* Ayanamsa Preferences Section */}
+      <div className="mb-8 border border-zinc-800 bg-black p-6">
+        <h2 className="font-mono uppercase tracking-[0.4em] text-zinc-500 mb-4" style={{ fontSize: '0.75rem' }}>
+          AYANAMSA SYSTEM
+        </h2>
+        <p className="text-zinc-600 font-mono uppercase tracking-[0.3em] mb-6" style={{ fontSize: '0.65rem' }}>
+          CHOOSE YOUR ZODIAC CALCULATION SYSTEM
+        </p>
+
+        <div className="space-y-3">
+          {/* Lahiri Option */}
+          <button
+            onClick={() => handleAyanamsaChange("lahiri")}
+            className={`w-full text-left p-4 border transition-all ${
+              ayanamsa === "lahiri"
+                ? "border-green-400 bg-green-400/5"
+                : "border-zinc-800 hover:border-zinc-700"
+            }`}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
+                  ayanamsa === "lahiri" ? "border-green-400" : "border-zinc-700"
+                }`}>
+                  {ayanamsa === "lahiri" && <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>}
+                </div>
+                <div>
+                  <div className="text-zinc-200 font-mono uppercase tracking-[0.3em] mb-1" style={{ fontSize: '0.75rem' }}>
+                    LAHIRI (CHITRAPAKSHA)
+                  </div>
+                  <div className="text-zinc-500 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                    24° 13' • GOVERNMENT OF INDIA STANDARD
+                  </div>
+                </div>
+              </div>
+              {ayanamsa === "lahiri" && (
+                <span className="text-green-400 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                  ACTIVE
+                </span>
+              )}
+            </div>
+            <div className="text-zinc-600 font-mono tracking-[0.3em] ml-6" style={{ fontSize: '0.6rem' }}>
+              Most popular in Vedic astrology. Official standard used by the Indian government.
+            </div>
+          </button>
+
+          {/* BV Raman Option */}
+          <button
+            onClick={() => handleAyanamsaChange("raman")}
+            className={`w-full text-left p-4 border transition-all ${
+              ayanamsa === "raman"
+                ? "border-green-400 bg-green-400/5"
+                : "border-zinc-800 hover:border-zinc-700"
+            }`}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
+                  ayanamsa === "raman" ? "border-green-400" : "border-zinc-700"
+                }`}>
+                  {ayanamsa === "raman" && <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>}
+                </div>
+                <div>
+                  <div className="text-zinc-200 font-mono uppercase tracking-[0.3em] mb-1" style={{ fontSize: '0.75rem' }}>
+                    BV RAMAN
+                  </div>
+                  <div className="text-zinc-500 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                    22° 46' • TRADITIONAL VEDIC SYSTEM
+                  </div>
+                </div>
+              </div>
+              {ayanamsa === "raman" && (
+                <span className="text-green-400 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                  ACTIVE
+                </span>
+              )}
+            </div>
+            <div className="text-zinc-600 font-mono tracking-[0.3em] ml-6" style={{ fontSize: '0.6rem' }}>
+              Classical Vedic system by renowned astrologer BV Raman. Widely respected.
+            </div>
+          </button>
+
+          {/* Tropical Option */}
+          <button
+            onClick={() => handleAyanamsaChange("tropical")}
+            className={`w-full text-left p-4 border transition-all ${
+              ayanamsa === "tropical"
+                ? "border-green-400 bg-green-400/5"
+                : "border-zinc-800 hover:border-zinc-700"
+            }`}
+          >
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
+                  ayanamsa === "tropical" ? "border-green-400" : "border-zinc-700"
+                }`}>
+                  {ayanamsa === "tropical" && <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>}
+                </div>
+                <div>
+                  <div className="text-zinc-200 font-mono uppercase tracking-[0.3em] mb-1" style={{ fontSize: '0.75rem' }}>
+                    TROPICAL (WESTERN)
+                  </div>
+                  <div className="text-zinc-500 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                    0° • SEASONAL ZODIAC
+                  </div>
+                </div>
+              </div>
+              {ayanamsa === "tropical" && (
+                <span className="text-green-400 font-mono uppercase tracking-[0.3em]" style={{ fontSize: '0.6rem' }}>
+                  ACTIVE
+                </span>
+              )}
+            </div>
+            <div className="text-zinc-600 font-mono tracking-[0.3em] ml-6" style={{ fontSize: '0.6rem' }}>
+              Western astrology system based on seasons, not fixed stars.
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Subscription Section */}
