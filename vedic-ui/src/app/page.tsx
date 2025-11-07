@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { JupiterTerminal } from "@/components/JupiterTerminal";
 import { Pane } from "@/components/Pane";
 import { UserButton } from "@/components/UserButton";
-import { fetchSwissHorizon, fetchSwissMonthly, fetchSwissMonthlyBatch, getAyanamsaPreference, type SwissMonthlyResponse } from "@/lib/api";
+import { fetchSwissHorizon, fetchSwissMonthly, fetchSwissMonthlyBatch, type SwissMonthlyResponse } from "@/lib/api";
+import { useAyanamsa } from "@/contexts/AyanamsaContext";
 
 // Vedic Terminal Ingress App — TypeScript + React
 // Accurate Lahiri sidereal using Swiss Ephemeris when available, with astronomia/internal fallbacks.
@@ -179,8 +180,8 @@ const COMMON_TIMEZONES = [
   {
     value: "Asia/Kolkata",
     label: "India (IST)",
-    lat: "22.5726",
-    lon: "88.3639",
+    lat: "19.0760",
+    lon: "72.8777",
   },
   {
     value: "Asia/Singapore",
@@ -1335,6 +1336,7 @@ void buildSwissPlanetFns;
 export default function VedicTerminalIngressApp() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+  const { ayanamsa } = useAyanamsa();
 
   // Always start with false on server to avoid hydration mismatch
   const [appMounted, setAppMounted] = useState(false);
@@ -1506,6 +1508,31 @@ const [velocityLoading, setVelocityLoading] = useState(false);
   const [now, setNow] = useState(() => DateTime.now().setZone(tz));
   const isPlus = plan === 'plus' || plan === 'admin';
   const isAdmin = plan === 'admin';
+
+  // Auto-refresh data when ayanamsa changes
+  useEffect(() => {
+    // Clear all cached monthly data
+    setIngressEventsByMonth(new Map());
+    setCombustionEventsByMonth(new Map());
+    setRetroEventsByMonth(new Map());
+    setVelocityEventsByMonth(new Map());
+
+    // Clear in-memory caches
+    swissMonthlyCacheRef.current.clear();
+    swissMonthlyPendingRef.current.clear();
+
+    // Clear displayed data
+    setLagnaRows([]);
+    setMoonRows([]);
+    setSunRows([]);
+    setOtherIngressRows([]);
+    setStationRows([]);
+    setCombRows([]);
+    setVelocityRows([]);
+
+    // Note: We don't auto-run the computation here
+    // User needs to click "run" or data will load on demand
+  }, [ayanamsa]);
 
   const showUpgradePrompt = (feature: string) => {
     setUpgradeFeature(feature);
@@ -1811,7 +1838,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         lon,
         tz,
         monthStartISO,
-        ayanamsa: getAyanamsaPreference(),
+        ayanamsa,
       }).then((data) => {
         swissMonthlyCacheRef.current.set(key, data);
         return data;
@@ -1916,7 +1943,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
               lon: coords.lon,
               tz,
               monthStartISOs,
-              ayanamsa: getAyanamsaPreference(),
+              ayanamsa,
             });
 
             // Check again after async operation
@@ -1993,6 +2020,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
       }
     },
     [
+      ayanamsa,
       append,
       assertTimezone,
       combustionEventsByMonth,
@@ -2204,7 +2232,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           startLocalISO,
           ascHours,
           moonDays: moonWindowDays,
-          ayanamsa: getAyanamsaPreference(),
+          ayanamsa,
         });
 
         if (horizonRequestRef.current !== requestId) return;

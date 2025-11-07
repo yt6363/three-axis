@@ -3,6 +3,7 @@
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAyanamsa } from "@/contexts/AyanamsaContext";
 
 interface SubscriptionData {
   status: string;
@@ -10,15 +11,13 @@ interface SubscriptionData {
   cancelAtPeriodEnd: boolean;
 }
 
-type AyanamsaType = "lahiri" | "raman" | "tropical";
-
 export default function AccountPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [ayanamsa, setAyanamsa] = useState<AyanamsaType>("lahiri");
+  const { ayanamsa, setAyanamsa } = useAyanamsa();
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -31,20 +30,6 @@ export default function AccountPage() {
       fetchSubscription();
     }
   }, [user]);
-
-  // Load ayanamsa preference from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("ayanamsa");
-    if (saved && (saved === "lahiri" || saved === "raman" || saved === "tropical")) {
-      setAyanamsa(saved as AyanamsaType);
-    }
-  }, []);
-
-  // Save ayanamsa preference to localStorage when changed
-  const handleAyanamsaChange = (newAyanamsa: AyanamsaType) => {
-    setAyanamsa(newAyanamsa);
-    localStorage.setItem("ayanamsa", newAyanamsa);
-  };
 
   const fetchSubscription = async () => {
     try {
