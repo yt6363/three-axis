@@ -156,7 +156,7 @@ export default function AccountPage() {
         <div className="space-y-3">
           {/* Lahiri Option */}
           <button
-            onClick={() => handleAyanamsaChange("lahiri")}
+            onClick={() => setAyanamsa("lahiri")}
             className={`w-full text-left p-4 border transition-all ${
               ayanamsa === "lahiri"
                 ? "border-green-400 bg-green-400/5"
@@ -192,7 +192,7 @@ export default function AccountPage() {
 
           {/* BV Raman Option */}
           <button
-            onClick={() => handleAyanamsaChange("raman")}
+            onClick={() => setAyanamsa("raman")}
             className={`w-full text-left p-4 border transition-all ${
               ayanamsa === "raman"
                 ? "border-green-400 bg-green-400/5"
@@ -228,7 +228,7 @@ export default function AccountPage() {
 
           {/* Tropical Option */}
           <button
-            onClick={() => handleAyanamsaChange("tropical")}
+            onClick={() => setAyanamsa("tropical")}
             className={`w-full text-left p-4 border transition-all ${
               ayanamsa === "tropical"
                 ? "border-green-400 bg-green-400/5"
