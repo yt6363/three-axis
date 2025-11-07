@@ -529,7 +529,7 @@ export function JupiterTerminal({
   const [symbolInput, setSymbolInput] = useState("^NSEI");
   const [activeSymbol, setActiveSymbol] = useState("^NSEI");
   const [interval, setInterval] = useState<Interval>("1d");
-  const [period, setPeriod] = useState<Period>("5y");
+  const [period, setPeriod] = useState<Period>("1y");
   const [customIntervalInput, setCustomIntervalInput] = useState("");
   const [customPeriodInput, setCustomPeriodInput] = useState("");
   const [showIntervalCustom, setShowIntervalCustom] = useState(false);
