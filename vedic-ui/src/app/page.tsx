@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { JupiterTerminal } from "@/components/JupiterTerminal";
 import { Pane } from "@/components/Pane";
 import { UserButton } from "@/components/UserButton";
-import { fetchSwissHorizon, fetchSwissMonthly, fetchSwissMonthlyBatch, type SwissMonthlyResponse } from "@/lib/api";
+import { fetchSwissHorizon, fetchSwissMonthly, fetchSwissMonthlyBatch, getAyanamsaPreference, type SwissMonthlyResponse } from "@/lib/api";
 
 // Vedic Terminal Ingress App — TypeScript + React
 // Accurate Lahiri sidereal using Swiss Ephemeris when available, with astronomia/internal fallbacks.
@@ -1811,6 +1811,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
         lon,
         tz,
         monthStartISO,
+        ayanamsa: getAyanamsaPreference(),
       }).then((data) => {
         swissMonthlyCacheRef.current.set(key, data);
         return data;
@@ -1915,6 +1916,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
               lon: coords.lon,
               tz,
               monthStartISOs,
+              ayanamsa: getAyanamsaPreference(),
             });
 
             // Check again after async operation
@@ -2202,6 +2204,7 @@ const [velocityLoading, setVelocityLoading] = useState(false);
           startLocalISO,
           ascHours,
           moonDays: moonWindowDays,
+          ayanamsa: getAyanamsaPreference(),
         });
 
         if (horizonRequestRef.current !== requestId) return;
