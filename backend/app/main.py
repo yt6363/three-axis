@@ -23,9 +23,16 @@ from .utils import (
 )
 from .swiss import compute_horizon, compute_monthly, compute_planetary_timeseries
 from .orbital import compute_overlay_series
+from .database import init_db, get_cached_month, cache_month, get_cache_stats
 
 
 app = FastAPI(title="Candlestick Service", version="0.1.0")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup."""
+    await init_db()
 
 app.add_middleware(
     CORSMiddleware,
@@ -97,6 +104,13 @@ class PlanetaryTimeseriesPayload(BaseModel):
 @app.get("/healthz")
 async def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/cache/stats")
+async def cache_stats():
+    """Get database cache statistics."""
+    stats = await get_cache_stats()
+    return {"ok": True, **stats}
 
 
 @app.get("/api/search")
@@ -236,13 +250,20 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
     """
     Batch endpoint to compute multiple months at once.
     Much faster than calling /monthly 60 times for 5 years!
-    Returns cached data when available.
+    Returns cached data when available (checks DB first, then memory cache).
     """
     results = {}
 
-    # Check which months are already cached
+    # Check which months are already cached (DB first, then memory)
     uncached_months = []
     for month_iso in payload.month_start_isos:
+        # Try database first (permanent cache)
+        db_cached = await get_cached_month(payload.lat, payload.lon, payload.tz, month_iso)
+        if db_cached is not None:
+            results[month_iso] = {"ok": True, **db_cached}
+            continue
+
+        # Try memory cache (faster but temporary)
         cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
         cached = events_cache.get(cache_key)
         if cached is not None:
@@ -262,8 +283,12 @@ async def swiss_monthly_batch(payload: SwissMonthlyBatchPayload):
                     month_iso,
                 )
                 result = {"ok": True, **data}
+
+                # Store in both memory cache and database
                 cache_key = f"monthly|{payload.lat}|{payload.lon}|{payload.tz}|{month_iso}"
                 events_cache.set(cache_key, result)
+                await cache_month(payload.lat, payload.lon, payload.tz, month_iso, data)
+
                 return month_iso, result
             except Exception as exc:
                 # Return error for this specific month
