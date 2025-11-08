@@ -58,7 +58,7 @@ class SwissHorizonPayload(BaseModel):
     start_local_iso: str = Field(alias="startLocalISO", min_length=8)
     asc_hours: int = Field(alias="ascHours", ge=1, le=168)
     moon_days: float = Field(alias="moonDays", ge=1/24, le=120)
-    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "tropical"
 
 
 class SwissMonthlyPayload(BaseModel):
@@ -68,7 +68,7 @@ class SwissMonthlyPayload(BaseModel):
     lon: float
     tz: str
     month_start_iso: str = Field(alias="monthStartISO", min_length=7)
-    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "tropical"
 
 
 class SwissMonthlyBatchPayload(BaseModel):
@@ -78,7 +78,7 @@ class SwissMonthlyBatchPayload(BaseModel):
     lon: float
     tz: str
     month_start_isos: List[str] = Field(alias="monthStartISOs", min_length=1, max_length=60)
-    ayanamsa: Literal["lahiri", "raman", "tropical"] = "lahiri"
+    ayanamsa: Literal["lahiri", "raman", "tropical"] = "tropical"
 
 
 class OrbitalOverlayPayload(BaseModel):

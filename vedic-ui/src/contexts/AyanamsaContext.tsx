@@ -12,7 +12,7 @@ interface AyanamsaContextType {
 const AyanamsaContext = createContext<AyanamsaContextType | undefined>(undefined);
 
 export function AyanamsaProvider({ children }: { children: React.ReactNode }) {
-  const [ayanamsa, setAyanamsaState] = useState<AyanamsaType>("lahiri");
+  const [ayanamsa, setAyanamsaState] = useState<AyanamsaType>("tropical");
 
   // Load from localStorage on mount
   useEffect(() => {
