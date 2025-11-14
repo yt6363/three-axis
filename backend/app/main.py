@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import anyio
+from datetime import datetime, timedelta
 from functools import partial
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -410,7 +411,6 @@ class AdvancedOverlayPayload(BaseModel):
 async def sunspot_overlay(payload: AdvancedOverlayPayload):
     """Get sunspot cycle overlay data."""
     try:
-        from datetime import timedelta
         start_dt = datetime.fromisoformat(payload.start_iso)
 
         if payload.duration_unit == "days":
@@ -427,11 +427,13 @@ async def sunspot_overlay(payload: AdvancedOverlayPayload):
             "series": [{
                 "name": "Sunspot Number (SSN)",
                 "key": "sunspot_ssn",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["ssn"] for d in data],
             }, {
                 "name": "Smoothed SSN",
                 "key": "sunspot_smoothed",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["smoothed_ssn"] for d in data],
             }]
@@ -444,7 +446,6 @@ async def sunspot_overlay(payload: AdvancedOverlayPayload):
 async def tidal_overlay(payload: AdvancedOverlayPayload):
     """Get tidal forces overlay data."""
     try:
-        from datetime import timedelta
         start_dt = datetime.fromisoformat(payload.start_iso)
 
         if payload.duration_unit == "days":
@@ -463,16 +464,19 @@ async def tidal_overlay(payload: AdvancedOverlayPayload):
             "series": [{
                 "name": "Total Tidal Force",
                 "key": "tidal_total",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["total_tidal_force"] for d in data],
             }, {
                 "name": "Moon Tidal",
                 "key": "tidal_moon",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["moon_tidal"] for d in data],
             }, {
                 "name": "Sun Tidal",
                 "key": "tidal_sun",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["sun_tidal"] for d in data],
             }]
@@ -485,7 +489,6 @@ async def tidal_overlay(payload: AdvancedOverlayPayload):
 async def barycenter_overlay(payload: AdvancedOverlayPayload):
     """Get solar system barycenter wobble overlay."""
     try:
-        from datetime import timedelta
         start_dt = datetime.fromisoformat(payload.start_iso)
 
         if payload.duration_unit == "days":
@@ -504,6 +507,7 @@ async def barycenter_overlay(payload: AdvancedOverlayPayload):
             "series": [{
                 "name": "Barycenter Distance (Sun Radii)",
                 "key": "barycenter_sun_radii",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["distance_sun_radii"] for d in data],
             }]
@@ -516,7 +520,6 @@ async def barycenter_overlay(payload: AdvancedOverlayPayload):
 async def gravitational_overlay(payload: AdvancedOverlayPayload):
     """Get net gravitational force overlay."""
     try:
-        from datetime import timedelta
         start_dt = datetime.fromisoformat(payload.start_iso)
 
         if payload.duration_unit == "days":
@@ -535,6 +538,7 @@ async def gravitational_overlay(payload: AdvancedOverlayPayload):
             "series": [{
                 "name": "Net Gravitational Force",
                 "key": "grav_force_magnitude",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["magnitude"] for d in data],
             }]
@@ -547,7 +551,6 @@ async def gravitational_overlay(payload: AdvancedOverlayPayload):
 async def bradley_overlay(payload: AdvancedOverlayPayload):
     """Get Bradley Siderograph overlay."""
     try:
-        from datetime import timedelta
         start_dt = datetime.fromisoformat(payload.start_iso)
 
         if payload.duration_unit == "days":
@@ -566,6 +569,7 @@ async def bradley_overlay(payload: AdvancedOverlayPayload):
             "series": [{
                 "name": "Bradley Siderograph",
                 "key": "bradley_value",
+                "objects": [],
                 "timestamps": [d["timestamp"] for d in data],
                 "values": [d["bradley_value"] for d in data],
             }]
