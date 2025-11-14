@@ -24,6 +24,13 @@ from .utils import (
 from .swiss import compute_horizon, compute_monthly, compute_planetary_timeseries
 from .orbital import compute_overlay_series
 from .database import init_db, get_cached_month, cache_month, get_cache_stats
+from .overlays import (
+    calculate_sunspot_overlay,
+    calculate_tidal_overlay,
+    calculate_barycenter_overlay,
+    calculate_gravitational_overlay,
+    calculate_bradley_siderograph,
+)
 
 
 app = FastAPI(title="Candlestick Service", version="0.1.0")
@@ -387,6 +394,184 @@ async def planetary_timeseries(payload: PlanetaryTimeseriesPayload):
         raise HTTPException(status_code=500, detail=f"Planetary timeseries failed: {exc}") from exc
 
     return {"ok": True, "data": data}
+
+
+# Advanced Overlays Payload
+class AdvancedOverlayPayload(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    start_iso: str = Field(alias="startISO", min_length=10)
+    duration_value: int = Field(alias="durationValue", ge=1, le=3650)
+    duration_unit: Literal["days", "months", "years"] = Field(alias="durationUnit")
+    interval_hours: int = Field(alias="intervalHours", default=24, ge=1, le=720)
+
+
+@app.post("/api/overlay/sunspot")
+async def sunspot_overlay(payload: AdvancedOverlayPayload):
+    """Get sunspot cycle overlay data."""
+    try:
+        from datetime import timedelta
+        start_dt = datetime.fromisoformat(payload.start_iso)
+
+        if payload.duration_unit == "days":
+            end_dt = start_dt + timedelta(days=payload.duration_value)
+        elif payload.duration_unit == "months":
+            end_dt = start_dt + timedelta(days=payload.duration_value * 30)
+        else:  # years
+            end_dt = start_dt + timedelta(days=payload.duration_value * 365)
+
+        data = await calculate_sunspot_overlay(start_dt, end_dt, payload.interval_hours)
+
+        return {
+            "ok": True,
+            "series": [{
+                "name": "Sunspot Number (SSN)",
+                "key": "sunspot_ssn",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["ssn"] for d in data],
+            }, {
+                "name": "Smoothed SSN",
+                "key": "sunspot_smoothed",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["smoothed_ssn"] for d in data],
+            }]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/overlay/tidal")
+async def tidal_overlay(payload: AdvancedOverlayPayload):
+    """Get tidal forces overlay data."""
+    try:
+        from datetime import timedelta
+        start_dt = datetime.fromisoformat(payload.start_iso)
+
+        if payload.duration_unit == "days":
+            end_dt = start_dt + timedelta(days=payload.duration_value)
+        elif payload.duration_unit == "months":
+            end_dt = start_dt + timedelta(days=payload.duration_value * 30)
+        else:  # years
+            end_dt = start_dt + timedelta(days=payload.duration_value * 365)
+
+        data = await anyio.to_thread.run_sync(
+            calculate_tidal_overlay, start_dt, end_dt, payload.interval_hours
+        )
+
+        return {
+            "ok": True,
+            "series": [{
+                "name": "Total Tidal Force",
+                "key": "tidal_total",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["total_tidal_force"] for d in data],
+            }, {
+                "name": "Moon Tidal",
+                "key": "tidal_moon",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["moon_tidal"] for d in data],
+            }, {
+                "name": "Sun Tidal",
+                "key": "tidal_sun",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["sun_tidal"] for d in data],
+            }]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/overlay/barycenter")
+async def barycenter_overlay(payload: AdvancedOverlayPayload):
+    """Get solar system barycenter wobble overlay."""
+    try:
+        from datetime import timedelta
+        start_dt = datetime.fromisoformat(payload.start_iso)
+
+        if payload.duration_unit == "days":
+            end_dt = start_dt + timedelta(days=payload.duration_value)
+        elif payload.duration_unit == "months":
+            end_dt = start_dt + timedelta(days=payload.duration_value * 30)
+        else:  # years
+            end_dt = start_dt + timedelta(days=payload.duration_value * 365)
+
+        data = await anyio.to_thread.run_sync(
+            calculate_barycenter_overlay, start_dt, end_dt, payload.interval_hours
+        )
+
+        return {
+            "ok": True,
+            "series": [{
+                "name": "Barycenter Distance (Sun Radii)",
+                "key": "barycenter_sun_radii",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["distance_sun_radii"] for d in data],
+            }]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/overlay/gravitational")
+async def gravitational_overlay(payload: AdvancedOverlayPayload):
+    """Get net gravitational force overlay."""
+    try:
+        from datetime import timedelta
+        start_dt = datetime.fromisoformat(payload.start_iso)
+
+        if payload.duration_unit == "days":
+            end_dt = start_dt + timedelta(days=payload.duration_value)
+        elif payload.duration_unit == "months":
+            end_dt = start_dt + timedelta(days=payload.duration_value * 30)
+        else:  # years
+            end_dt = start_dt + timedelta(days=payload.duration_value * 365)
+
+        data = await anyio.to_thread.run_sync(
+            calculate_gravitational_overlay, start_dt, end_dt, payload.interval_hours
+        )
+
+        return {
+            "ok": True,
+            "series": [{
+                "name": "Net Gravitational Force",
+                "key": "grav_force_magnitude",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["magnitude"] for d in data],
+            }]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/overlay/bradley")
+async def bradley_overlay(payload: AdvancedOverlayPayload):
+    """Get Bradley Siderograph overlay."""
+    try:
+        from datetime import timedelta
+        start_dt = datetime.fromisoformat(payload.start_iso)
+
+        if payload.duration_unit == "days":
+            end_dt = start_dt + timedelta(days=payload.duration_value)
+        elif payload.duration_unit == "months":
+            end_dt = start_dt + timedelta(days=payload.duration_value * 30)
+        else:  # years
+            end_dt = start_dt + timedelta(days=payload.duration_value * 365)
+
+        data = await anyio.to_thread.run_sync(
+            calculate_bradley_siderograph, start_dt, end_dt, payload.interval_hours
+        )
+
+        return {
+            "ok": True,
+            "series": [{
+                "name": "Bradley Siderograph",
+                "key": "bradley_value",
+                "timestamps": [d["timestamp"] for d in data],
+                "values": [d["bradley_value"] for d in data],
+            }]
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 def create_app() -> FastAPI:
