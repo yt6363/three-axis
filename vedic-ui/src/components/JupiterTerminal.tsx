@@ -2620,8 +2620,9 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    // Calculate duration in days
-    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    // Calculate duration in days with 6 months buffer for future data
+    const baseDurationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const durationDays = baseDurationDays + 180; // Add 6 months of future data
 
     setSunspotBusy(true);
     setSunspotError(null);
@@ -2650,7 +2651,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const baseDurationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const durationDays = baseDurationDays + 180;
 
     setTidalBusy(true);
     setTidalError(null);
@@ -2679,7 +2681,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const baseDurationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const durationDays = baseDurationDays + 180;
 
     setBarycenterBusy(true);
     setBarycenterError(null);
@@ -2708,7 +2711,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const baseDurationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const durationDays = baseDurationDays + 180;
 
     setGravitationalBusy(true);
     setGravitationalError(null);
@@ -2737,7 +2741,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const baseDurationDays = Math.ceil(endDT.diff(startDT, 'days').days);
+    const durationDays = baseDurationDays + 180;
 
     setBradleyBusy(true);
     setBradleyError(null);
