@@ -1982,7 +1982,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       datasets.push({
         name: series.name,
         type: "line",
-        pane: "sunspot",
+        pane: "orbital",
         priceScaleId: `sunspot-${index}`,
         data: points,
         color,
@@ -2003,7 +2003,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       datasets.push({
         name: series.name,
         type: "line",
-        pane: "tidal",
+        pane: "orbital",
         priceScaleId: `tidal-${index}`,
         data: points,
         color,
@@ -2024,7 +2024,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       datasets.push({
         name: series.name,
         type: "line",
-        pane: "barycenter",
+        pane: "orbital",
         priceScaleId: `barycenter-${index}`,
         data: points,
         color,
@@ -2045,7 +2045,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       datasets.push({
         name: series.name,
         type: "line",
-        pane: "gravitational",
+        pane: "orbital",
         priceScaleId: `gravitational-${index}`,
         data: points,
         color,
@@ -2066,7 +2066,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
       datasets.push({
         name: series.name,
         type: "line",
-        pane: "bradley",
+        pane: "orbital",
         priceScaleId: `bradley-${index}`,
         data: points,
         color,
