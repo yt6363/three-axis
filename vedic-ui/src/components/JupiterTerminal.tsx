@@ -24,7 +24,16 @@ import {
 } from "@/components/EChartsContainer";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
 import type { Candle, Interval, Period, OrbitalOverlaySeries } from "@/lib/api";
-import { fetchOHLC, fetchOrbitalOverlay, fetchPlanetaryTimeseries } from "@/lib/api";
+import {
+  fetchOHLC,
+  fetchOrbitalOverlay,
+  fetchPlanetaryTimeseries,
+  fetchSunspotOverlay,
+  fetchTidalOverlay,
+  fetchBarycenterOverlay,
+  fetchGravitationalOverlay,
+  fetchBradleyOverlay,
+} from "@/lib/api";
 import type { IndicatorDataset } from "@/lib/indicators";
 
 type Suggestion = {
@@ -183,6 +192,11 @@ type PersistedTerminalState = {
   lastUpdated?: string | null;
   uploadName?: string | null;
   orbitalSeries?: OrbitalOverlaySeries[];
+  sunspotSeries?: OrbitalOverlaySeries[];
+  tidalSeries?: OrbitalOverlaySeries[];
+  barycenterSeries?: OrbitalOverlaySeries[];
+  gravitationalSeries?: OrbitalOverlaySeries[];
+  bradleySeries?: OrbitalOverlaySeries[];
   overlayError?: string | null;
   planetaryLineSeriesData?: PlanetaryLineSeries[];
   chartRangeStart?: number | null;
@@ -693,6 +707,26 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const [overlayBusy, setOverlayBusy] = useState(false);
   const [overlayError, setOverlayError] = useState<string | null>(null);
   const [orbitalSeries, setOrbitalSeries] = useState<OrbitalOverlaySeries[]>([]);
+
+  // Advanced overlay states
+  const [sunspotSeries, setSunspotSeries] = useState<OrbitalOverlaySeries[]>([]);
+  const [tidalSeries, setTidalSeries] = useState<OrbitalOverlaySeries[]>([]);
+  const [barycenterSeries, setBarycenterSeries] = useState<OrbitalOverlaySeries[]>([]);
+  const [gravitationalSeries, setGravitationalSeries] = useState<OrbitalOverlaySeries[]>([]);
+  const [bradleySeries, setBradleySeries] = useState<OrbitalOverlaySeries[]>([]);
+
+  const [sunspotBusy, setSunspotBusy] = useState(false);
+  const [tidalBusy, setTidalBusy] = useState(false);
+  const [barycenterBusy, setBarycenterBusy] = useState(false);
+  const [gravitationalBusy, setGravitationalBusy] = useState(false);
+  const [bradleyBusy, setBradleyBusy] = useState(false);
+
+  const [sunspotError, setSunspotError] = useState<string | null>(null);
+  const [tidalError, setTidalError] = useState<string | null>(null);
+  const [barycenterError, setBarycenterError] = useState<string | null>(null);
+  const [gravitationalError, setGravitationalError] = useState<string | null>(null);
+  const [bradleyError, setBradleyError] = useState<string | null>(null);
+
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string>("");
 
@@ -955,6 +989,103 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
           setOrbitalSeries(sanitizedSeries);
         }
       }
+
+      // Restore advanced overlay series
+      if (Array.isArray(parsed.sunspotSeries)) {
+        const sanitizedSunspot = parsed.sunspotSeries.filter(
+          (series): series is OrbitalOverlaySeries => {
+            if (!series || typeof series !== "object") return false;
+            const { name, key, objects, timestamps, values } = series as Record<string, unknown>;
+            return (
+              typeof name === "string" &&
+              typeof key === "string" &&
+              Array.isArray(objects) &&
+              Array.isArray(timestamps) &&
+              Array.isArray(values)
+            );
+          },
+        );
+        if (sanitizedSunspot.length > 0) {
+          setSunspotSeries(sanitizedSunspot);
+        }
+      }
+
+      if (Array.isArray(parsed.tidalSeries)) {
+        const sanitizedTidal = parsed.tidalSeries.filter(
+          (series): series is OrbitalOverlaySeries => {
+            if (!series || typeof series !== "object") return false;
+            const { name, key, objects, timestamps, values } = series as Record<string, unknown>;
+            return (
+              typeof name === "string" &&
+              typeof key === "string" &&
+              Array.isArray(objects) &&
+              Array.isArray(timestamps) &&
+              Array.isArray(values)
+            );
+          },
+        );
+        if (sanitizedTidal.length > 0) {
+          setTidalSeries(sanitizedTidal);
+        }
+      }
+
+      if (Array.isArray(parsed.barycenterSeries)) {
+        const sanitizedBarycenter = parsed.barycenterSeries.filter(
+          (series): series is OrbitalOverlaySeries => {
+            if (!series || typeof series !== "object") return false;
+            const { name, key, objects, timestamps, values } = series as Record<string, unknown>;
+            return (
+              typeof name === "string" &&
+              typeof key === "string" &&
+              Array.isArray(objects) &&
+              Array.isArray(timestamps) &&
+              Array.isArray(values)
+            );
+          },
+        );
+        if (sanitizedBarycenter.length > 0) {
+          setBarycenterSeries(sanitizedBarycenter);
+        }
+      }
+
+      if (Array.isArray(parsed.gravitationalSeries)) {
+        const sanitizedGravitational = parsed.gravitationalSeries.filter(
+          (series): series is OrbitalOverlaySeries => {
+            if (!series || typeof series !== "object") return false;
+            const { name, key, objects, timestamps, values } = series as Record<string, unknown>;
+            return (
+              typeof name === "string" &&
+              typeof key === "string" &&
+              Array.isArray(objects) &&
+              Array.isArray(timestamps) &&
+              Array.isArray(values)
+            );
+          },
+        );
+        if (sanitizedGravitational.length > 0) {
+          setGravitationalSeries(sanitizedGravitational);
+        }
+      }
+
+      if (Array.isArray(parsed.bradleySeries)) {
+        const sanitizedBradley = parsed.bradleySeries.filter(
+          (series): series is OrbitalOverlaySeries => {
+            if (!series || typeof series !== "object") return false;
+            const { name, key, objects, timestamps, values } = series as Record<string, unknown>;
+            return (
+              typeof name === "string" &&
+              typeof key === "string" &&
+              Array.isArray(objects) &&
+              Array.isArray(timestamps) &&
+              Array.isArray(values)
+            );
+          },
+        );
+        if (sanitizedBradley.length > 0) {
+          setBradleySeries(sanitizedBradley);
+        }
+      }
+
       if (
         Object.prototype.hasOwnProperty.call(parsed, "overlayError") &&
         (typeof parsed.overlayError === "string" || parsed.overlayError === null)
@@ -1094,6 +1225,21 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
         if (orbitalSeries.length > 0) {
           payload.orbitalSeries = orbitalSeries;
         }
+        if (sunspotSeries.length > 0) {
+          payload.sunspotSeries = sunspotSeries;
+        }
+        if (tidalSeries.length > 0) {
+          payload.tidalSeries = tidalSeries;
+        }
+        if (barycenterSeries.length > 0) {
+          payload.barycenterSeries = barycenterSeries;
+        }
+        if (gravitationalSeries.length > 0) {
+          payload.gravitationalSeries = gravitationalSeries;
+        }
+        if (bradleySeries.length > 0) {
+          payload.bradleySeries = bradleySeries;
+        }
         if (planetarySnapshot && planetarySnapshot.length > 0) {
           payload.planetaryLineSeriesData = planetarySnapshot;
         }
@@ -1144,6 +1290,11 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     overlayStartDate,
     overlayWeightsInput,
     orbitalSeries,
+    sunspotSeries,
+    tidalSeries,
+    barycenterSeries,
+    gravitationalSeries,
+    bradleySeries,
     chartVisibleRange,
     period,
     planetaryLinesEnabled,
@@ -1819,8 +1970,122 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
         valueKind,
       });
     });
+
+    // Add sunspot series
+    sunspotSeries.forEach((series, index) => {
+      const color = "#fbbf24"; // Amber for sunspot
+      const points = series.timestamps.map((ts, i) => ({
+        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        value: series.values[i],
+      }));
+
+      datasets.push({
+        name: series.name,
+        type: "line",
+        pane: "sunspot",
+        priceScaleId: `sunspot-${index}`,
+        data: points,
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+    });
+
+    // Add tidal series
+    tidalSeries.forEach((series, index) => {
+      const color = "#3b82f6"; // Blue for tidal
+      const points = series.timestamps.map((ts, i) => ({
+        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        value: series.values[i],
+      }));
+
+      datasets.push({
+        name: series.name,
+        type: "line",
+        pane: "tidal",
+        priceScaleId: `tidal-${index}`,
+        data: points,
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+    });
+
+    // Add barycenter series
+    barycenterSeries.forEach((series, index) => {
+      const color = "#a855f7"; // Purple for barycenter
+      const points = series.timestamps.map((ts, i) => ({
+        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        value: series.values[i],
+      }));
+
+      datasets.push({
+        name: series.name,
+        type: "line",
+        pane: "barycenter",
+        priceScaleId: `barycenter-${index}`,
+        data: points,
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+    });
+
+    // Add gravitational series
+    gravitationalSeries.forEach((series, index) => {
+      const color = "#ec4899"; // Pink for gravitational
+      const points = series.timestamps.map((ts, i) => ({
+        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        value: series.values[i],
+      }));
+
+      datasets.push({
+        name: series.name,
+        type: "line",
+        pane: "gravitational",
+        priceScaleId: `gravitational-${index}`,
+        data: points,
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+    });
+
+    // Add bradley series
+    bradleySeries.forEach((series, index) => {
+      const color = "#10b981"; // Green for bradley
+      const points = series.timestamps.map((ts, i) => ({
+        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        value: series.values[i],
+      }));
+
+      datasets.push({
+        name: series.name,
+        type: "line",
+        pane: "bradley",
+        priceScaleId: `bradley-${index}`,
+        data: points,
+        color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+    });
+
     return datasets;
-  }, [orbitalSeries, overlayLabel]);
+  }, [
+    orbitalSeries,
+    sunspotSeries,
+    tidalSeries,
+    barycenterSeries,
+    gravitationalSeries,
+    bradleySeries,
+    overlayLabel,
+  ]);
 
   const ingressEventLines = useMemo<OverlayEventLine[]>(() => {
     if (!deferredIngressEnabled) return [];
@@ -2343,6 +2608,158 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
   const handleOverlayClear = useCallback(() => {
     setOrbitalSeries([]);
     setOverlayError(null);
+  }, []);
+
+  // Advanced overlay handlers
+  const handleSunspotFetch = useCallback(async () => {
+    if (!candles.length) return;
+
+    const firstCandle = candles[0];
+    const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    setSunspotBusy(true);
+    setSunspotError(null);
+
+    try {
+      const response = await fetchSunspotOverlay({
+        startISO,
+        durationValue: 1,
+        durationUnit: "years",
+        intervalHours: 24,
+      });
+      setSunspotSeries(response.series);
+    } catch (err) {
+      setSunspotError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSunspotBusy(false);
+    }
+  }, [candles]);
+
+  const handleTidalFetch = useCallback(async () => {
+    if (!candles.length) return;
+
+    const firstCandle = candles[0];
+    const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    setTidalBusy(true);
+    setTidalError(null);
+
+    try {
+      const response = await fetchTidalOverlay({
+        startISO,
+        durationValue: 1,
+        durationUnit: "years",
+        intervalHours: 24,
+      });
+      setTidalSeries(response.series);
+    } catch (err) {
+      setTidalError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setTidalBusy(false);
+    }
+  }, [candles]);
+
+  const handleBarycenterFetch = useCallback(async () => {
+    if (!candles.length) return;
+
+    const firstCandle = candles[0];
+    const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    setBarycenterBusy(true);
+    setBarycenterError(null);
+
+    try {
+      const response = await fetchBarycenterOverlay({
+        startISO,
+        durationValue: 1,
+        durationUnit: "years",
+        intervalHours: 24,
+      });
+      setBarycenterSeries(response.series);
+    } catch (err) {
+      setBarycenterError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBarycenterBusy(false);
+    }
+  }, [candles]);
+
+  const handleGravitationalFetch = useCallback(async () => {
+    if (!candles.length) return;
+
+    const firstCandle = candles[0];
+    const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    setGravitationalBusy(true);
+    setGravitationalError(null);
+
+    try {
+      const response = await fetchGravitationalOverlay({
+        startISO,
+        durationValue: 1,
+        durationUnit: "years",
+        intervalHours: 24,
+      });
+      setGravitationalSeries(response.series);
+    } catch (err) {
+      setGravitationalError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setGravitationalBusy(false);
+    }
+  }, [candles]);
+
+  const handleBradleyFetch = useCallback(async () => {
+    if (!candles.length) return;
+
+    const firstCandle = candles[0];
+    const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    setBradleyBusy(true);
+    setBradleyError(null);
+
+    try {
+      const response = await fetchBradleyOverlay({
+        startISO,
+        durationValue: 1,
+        durationUnit: "years",
+        intervalHours: 24,
+      });
+      setBradleySeries(response.series);
+    } catch (err) {
+      setBradleyError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBradleyBusy(false);
+    }
+  }, [candles]);
+
+  // Clear handlers
+  const handleSunspotClear = useCallback(() => {
+    setSunspotSeries([]);
+    setSunspotError(null);
+  }, []);
+
+  const handleTidalClear = useCallback(() => {
+    setTidalSeries([]);
+    setTidalError(null);
+  }, []);
+
+  const handleBarycenterClear = useCallback(() => {
+    setBarycenterSeries([]);
+    setBarycenterError(null);
+  }, []);
+
+  const handleGravitationalClear = useCallback(() => {
+    setGravitationalSeries([]);
+    setGravitationalError(null);
+  }, []);
+
+  const handleBradleyClear = useCallback(() => {
+    setBradleySeries([]);
+    setBradleyError(null);
   }, []);
 
   const loadSymbol = useCallback(
@@ -3227,6 +3644,231 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                   </div>
                 )}
               </div>
+            </div>
+          </CollapsibleSection>
+
+          {/* Sunspot Overlay Section */}
+          <CollapsibleSection
+            title="Sunspot Cycle"
+            defaultOpen={false}
+            disabled={!isPlus}
+            onDisabledClick={() => {
+              setUpgradeFeature("Sunspot Cycle overlay");
+              setShowUpgradeModal(true);
+            }}
+          >
+            <div className="space-y-3">
+              <div className="text-xs text-zinc-400">
+                Plot NOAA sunspot cycle data on the chart.
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSunspotFetch}
+                  className="flex-1 rounded-none border border-green-600 bg-green-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-green-400 hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  disabled={sunspotBusy || !candles.length}
+                >
+                  {sunspotBusy ? "Loading..." : "Load"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSunspotClear}
+                  className="flex-1 rounded-none border border-zinc-700 bg-zinc-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-zinc-400 hover:bg-zinc-900/30 transition-colors disabled:opacity-50"
+                  disabled={sunspotBusy || sunspotSeries.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {sunspotError && (
+                <div className="text-xs text-red-400">{sunspotError}</div>
+              )}
+              {!sunspotError && sunspotSeries.length > 0 && (
+                <div className="text-xs text-green-400">
+                  {sunspotSeries.length} series ready.
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+
+          {/* Tidal Forces Overlay Section */}
+          <CollapsibleSection
+            title="Tidal Forces"
+            defaultOpen={false}
+            disabled={!isPlus}
+            onDisabledClick={() => {
+              setUpgradeFeature("Tidal Forces overlay");
+              setShowUpgradeModal(true);
+            }}
+          >
+            <div className="space-y-3">
+              <div className="text-xs text-zinc-400">
+                Plot tidal forces from Moon, Sun, and Jupiter.
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleTidalFetch}
+                  className="flex-1 rounded-none border border-green-600 bg-green-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-green-400 hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  disabled={tidalBusy || !candles.length}
+                >
+                  {tidalBusy ? "Loading..." : "Load"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTidalClear}
+                  className="flex-1 rounded-none border border-zinc-700 bg-zinc-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-zinc-400 hover:bg-zinc-900/30 transition-colors disabled:opacity-50"
+                  disabled={tidalBusy || tidalSeries.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {tidalError && (
+                <div className="text-xs text-red-400">{tidalError}</div>
+              )}
+              {!tidalError && tidalSeries.length > 0 && (
+                <div className="text-xs text-green-400">
+                  {tidalSeries.length} series ready.
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+
+          {/* Barycenter Wobble Overlay Section */}
+          <CollapsibleSection
+            title="Barycenter Wobble"
+            defaultOpen={false}
+            disabled={!isPlus}
+            onDisabledClick={() => {
+              setUpgradeFeature("Barycenter Wobble overlay");
+              setShowUpgradeModal(true);
+            }}
+          >
+            <div className="space-y-3">
+              <div className="text-xs text-zinc-400">
+                Plot solar system barycenter distance from Sun.
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleBarycenterFetch}
+                  className="flex-1 rounded-none border border-green-600 bg-green-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-green-400 hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  disabled={barycenterBusy || !candles.length}
+                >
+                  {barycenterBusy ? "Loading..." : "Load"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBarycenterClear}
+                  className="flex-1 rounded-none border border-zinc-700 bg-zinc-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-zinc-400 hover:bg-zinc-900/30 transition-colors disabled:opacity-50"
+                  disabled={barycenterBusy || barycenterSeries.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {barycenterError && (
+                <div className="text-xs text-red-400">{barycenterError}</div>
+              )}
+              {!barycenterError && barycenterSeries.length > 0 && (
+                <div className="text-xs text-green-400">
+                  {barycenterSeries.length} series ready.
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+
+          {/* Gravitational Forces Overlay Section */}
+          <CollapsibleSection
+            title="Gravitational Forces"
+            defaultOpen={false}
+            disabled={!isPlus}
+            onDisabledClick={() => {
+              setUpgradeFeature("Gravitational Forces overlay");
+              setShowUpgradeModal(true);
+            }}
+          >
+            <div className="space-y-3">
+              <div className="text-xs text-zinc-400">
+                Plot net gravitational force vector on Earth.
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleGravitationalFetch}
+                  className="flex-1 rounded-none border border-green-600 bg-green-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-green-400 hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  disabled={gravitationalBusy || !candles.length}
+                >
+                  {gravitationalBusy ? "Loading..." : "Load"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGravitationalClear}
+                  className="flex-1 rounded-none border border-zinc-700 bg-zinc-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-zinc-400 hover:bg-zinc-900/30 transition-colors disabled:opacity-50"
+                  disabled={gravitationalBusy || gravitationalSeries.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {gravitationalError && (
+                <div className="text-xs text-red-400">{gravitationalError}</div>
+              )}
+              {!gravitationalError && gravitationalSeries.length > 0 && (
+                <div className="text-xs text-green-400">
+                  {gravitationalSeries.length} series ready.
+                </div>
+              )}
+            </div>
+          </CollapsibleSection>
+
+          {/* Bradley Siderograph Overlay Section */}
+          <CollapsibleSection
+            title="Bradley Siderograph"
+            defaultOpen={false}
+            disabled={!isPlus}
+            onDisabledClick={() => {
+              setUpgradeFeature("Bradley Siderograph overlay");
+              setShowUpgradeModal(true);
+            }}
+          >
+            <div className="space-y-3">
+              <div className="text-xs text-zinc-400">
+                Plot Bradley Siderograph indicator values.
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleBradleyFetch}
+                  className="flex-1 rounded-none border border-green-600 bg-green-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-green-400 hover:bg-green-900/30 transition-colors disabled:opacity-50"
+                  disabled={bradleyBusy || !candles.length}
+                >
+                  {bradleyBusy ? "Loading..." : "Load"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBradleyClear}
+                  className="flex-1 rounded-none border border-zinc-700 bg-zinc-900/20 px-3 py-1.5 text-xs uppercase tracking-wide text-zinc-400 hover:bg-zinc-900/30 transition-colors disabled:opacity-50"
+                  disabled={bradleyBusy || bradleySeries.length === 0}
+                >
+                  Clear
+                </button>
+              </div>
+
+              {bradleyError && (
+                <div className="text-xs text-red-400">{bradleyError}</div>
+              )}
+              {!bradleyError && bradleySeries.length > 0 && (
+                <div className="text-xs text-green-400">
+                  {bradleySeries.length} series ready.
+                </div>
+              )}
             </div>
           </CollapsibleSection>
 
