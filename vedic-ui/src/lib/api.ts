@@ -249,3 +249,101 @@ export async function fetchPlanetaryTimeseries(
   const data = (await response.json()) as PlanetaryTimeseriesResponse;
   return data;
 }
+
+// Advanced Overlays
+type AdvancedOverlayRequest = {
+  startISO: string;
+  durationValue: number;
+  durationUnit: "days" | "months" | "years";
+  intervalHours?: number;
+};
+
+type AdvancedOverlayResponse = {
+  ok: boolean;
+  series: OrbitalOverlaySeries[];
+};
+
+export async function fetchSunspotOverlay(
+  request: AdvancedOverlayRequest
+): Promise<AdvancedOverlayResponse> {
+  const response = await fetch(`${API_BASE}/api/overlay/sunspot`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const detail = (await response.text()) || response.statusText;
+    throw new Error(`Sunspot overlay failed (${response.status}): ${detail}`);
+  }
+
+  return await response.json();
+}
+
+export async function fetchTidalOverlay(
+  request: AdvancedOverlayRequest
+): Promise<AdvancedOverlayResponse> {
+  const response = await fetch(`${API_BASE}/api/overlay/tidal`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const detail = (await response.text()) || response.statusText;
+    throw new Error(`Tidal overlay failed (${response.status}): ${detail}`);
+  }
+
+  return await response.json();
+}
+
+export async function fetchBarycenterOverlay(
+  request: AdvancedOverlayRequest
+): Promise<AdvancedOverlayResponse> {
+  const response = await fetch(`${API_BASE}/api/overlay/barycenter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const detail = (await response.text()) || response.statusText;
+    throw new Error(`Barycenter overlay failed (${response.status}): ${detail}`);
+  }
+
+  return await response.json();
+}
+
+export async function fetchGravitationalOverlay(
+  request: AdvancedOverlayRequest
+): Promise<AdvancedOverlayResponse> {
+  const response = await fetch(`${API_BASE}/api/overlay/gravitational`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const detail = (await response.text()) || response.statusText;
+    throw new Error(`Gravitational overlay failed (${response.status}): ${detail}`);
+  }
+
+  return await response.json();
+}
+
+export async function fetchBradleyOverlay(
+  request: AdvancedOverlayRequest
+): Promise<AdvancedOverlayResponse> {
+  const response = await fetch(`${API_BASE}/api/overlay/bradley`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const detail = (await response.text()) || response.statusText;
+    throw new Error(`Bradley overlay failed (${response.status}): ${detail}`);
+  }
+
+  return await response.json();
+}
