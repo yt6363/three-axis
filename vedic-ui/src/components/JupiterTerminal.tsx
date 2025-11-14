@@ -2615,8 +2615,13 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     if (!candles.length) return;
 
     const firstCandle = candles[0];
+    const lastCandle = candles[candles.length - 1];
     const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    // Calculate duration in days
+    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
 
     setSunspotBusy(true);
     setSunspotError(null);
@@ -2624,8 +2629,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     try {
       const response = await fetchSunspotOverlay({
         startISO,
-        durationValue: 1,
-        durationUnit: "years",
+        durationValue: durationDays,
+        durationUnit: "days",
         intervalHours: 24,
       });
       setSunspotSeries(response.series);
@@ -2640,8 +2645,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     if (!candles.length) return;
 
     const firstCandle = candles[0];
+    const lastCandle = candles[candles.length - 1];
     const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
 
     setTidalBusy(true);
     setTidalError(null);
@@ -2649,8 +2658,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     try {
       const response = await fetchTidalOverlay({
         startISO,
-        durationValue: 1,
-        durationUnit: "years",
+        durationValue: durationDays,
+        durationUnit: "days",
         intervalHours: 24,
       });
       setTidalSeries(response.series);
@@ -2665,8 +2674,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     if (!candles.length) return;
 
     const firstCandle = candles[0];
+    const lastCandle = candles[candles.length - 1];
     const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
 
     setBarycenterBusy(true);
     setBarycenterError(null);
@@ -2674,8 +2687,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     try {
       const response = await fetchBarycenterOverlay({
         startISO,
-        durationValue: 1,
-        durationUnit: "years",
+        durationValue: durationDays,
+        durationUnit: "days",
         intervalHours: 24,
       });
       setBarycenterSeries(response.series);
@@ -2690,8 +2703,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     if (!candles.length) return;
 
     const firstCandle = candles[0];
+    const lastCandle = candles[candles.length - 1];
     const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
 
     setGravitationalBusy(true);
     setGravitationalError(null);
@@ -2699,8 +2716,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     try {
       const response = await fetchGravitationalOverlay({
         startISO,
-        durationValue: 1,
-        durationUnit: "years",
+        durationValue: durationDays,
+        durationUnit: "days",
         intervalHours: 24,
       });
       setGravitationalSeries(response.series);
@@ -2715,8 +2732,12 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     if (!candles.length) return;
 
     const firstCandle = candles[0];
+    const lastCandle = candles[candles.length - 1];
     const startDT = DateTime.fromSeconds(firstCandle.time, { zone: "UTC" });
+    const endDT = DateTime.fromSeconds(lastCandle.time, { zone: "UTC" });
     const startISO = startDT.toFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+    const durationDays = Math.ceil(endDT.diff(startDT, 'days').days);
 
     setBradleyBusy(true);
     setBradleyError(null);
@@ -2724,8 +2745,8 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     try {
       const response = await fetchBradleyOverlay({
         startISO,
-        durationValue: 1,
-        durationUnit: "years",
+        durationValue: durationDays,
+        durationUnit: "days",
         intervalHours: 24,
       });
       setBradleySeries(response.series);
