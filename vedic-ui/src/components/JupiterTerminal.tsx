@@ -1975,7 +1975,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     sunspotSeries.forEach((series, index) => {
       const color = "#fbbf24"; // Amber for sunspot
       const points = series.timestamps.map((ts, i) => ({
-        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        time: (typeof ts === 'number' ? ts : Number(ts)) as UTCTimestamp,
         value: series.values[i],
       }));
 
@@ -1996,7 +1996,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     tidalSeries.forEach((series, index) => {
       const color = "#3b82f6"; // Blue for tidal
       const points = series.timestamps.map((ts, i) => ({
-        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        time: (typeof ts === 'number' ? ts : Number(ts)) as UTCTimestamp,
         value: series.values[i],
       }));
 
@@ -2017,7 +2017,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     barycenterSeries.forEach((series, index) => {
       const color = "#a855f7"; // Purple for barycenter
       const points = series.timestamps.map((ts, i) => ({
-        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        time: (typeof ts === 'number' ? ts : Number(ts)) as UTCTimestamp,
         value: series.values[i],
       }));
 
@@ -2038,7 +2038,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     gravitationalSeries.forEach((series, index) => {
       const color = "#ec4899"; // Pink for gravitational
       const points = series.timestamps.map((ts, i) => ({
-        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        time: (typeof ts === 'number' ? ts : Number(ts)) as UTCTimestamp,
         value: series.values[i],
       }));
 
@@ -2059,7 +2059,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
     bradleySeries.forEach((series, index) => {
       const color = "#10b981"; // Green for bradley
       const points = series.timestamps.map((ts, i) => ({
-        time: DateTime.fromISO(ts).toSeconds() as UTCTimestamp,
+        time: (typeof ts === 'number' ? ts : Number(ts)) as UTCTimestamp,
         value: series.values[i],
       }));
 
