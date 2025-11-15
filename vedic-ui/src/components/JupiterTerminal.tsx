@@ -3216,13 +3216,22 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                             onChange={(e) => setCustomPeriodInput(e.target.value)}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' && customPeriodInput.trim()) {
-                                setPeriod(customPeriodInput.trim() as Period);
-                                periodDropdown.setOpen(false);
-                                setShowPeriodCustom(false);
-                                setCustomPeriodInput("");
+                                const trimmed = customPeriodInput.trim();
+                                // Validate against allowed periods
+                                const validPeriods = ["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"];
+                                if (validPeriods.includes(trimmed)) {
+                                  setPeriod(trimmed as Period);
+                                  periodDropdown.setOpen(false);
+                                  setShowPeriodCustom(false);
+                                  setCustomPeriodInput("");
+                                } else {
+                                  // Show error or ignore invalid input
+                                  setCustomPeriodInput("");
+                                  alert(`Invalid period "${trimmed}". Allowed: 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max`);
+                                }
                               }
                             }}
-                            placeholder="e.g. 10d, 15mo, 3y"
+                            placeholder="5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max"
                             className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1 text-xs focus:outline-none focus:border-green-500"
                             autoFocus
                           />
