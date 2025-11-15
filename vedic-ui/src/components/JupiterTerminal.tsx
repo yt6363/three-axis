@@ -3215,18 +3215,14 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                             value={customPeriodInput}
                             onChange={(e) => setCustomPeriodInput(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' if (e.key === 'Enter' && customPeriodInput.trim()) {if (e.key === 'Enter' && customPeriodInput.trim()) { customPeriodInput.trim()) {
+                              if (e.key === 'Enter' && customPeriodInput.trim()) {
                                 setPeriod(customPeriodInput.trim() as Period);
                                 periodDropdown.setOpen(false);
                                 setShowPeriodCustom(false);
                                 setCustomPeriodInput("");
-                                  // Show error or ignore invalid input
-                                  setCustomPeriodInput("");
-                                  alert(`Invalid period "${trimmed}". Allowed: 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max`);
-                                }
                               }
                             }}
-                            placeholder="5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max"
+                            placeholder="e.g. 10d, 15mo, 3y, 10y"
                             className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1 text-xs focus:outline-none focus:border-green-500"
                             autoFocus
                           />
