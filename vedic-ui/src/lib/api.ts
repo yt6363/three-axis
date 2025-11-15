@@ -17,7 +17,8 @@ export type Interval =
   | "1mo"
   | "3mo";
 
-export type Period = "5d" | "1mo" | "3mo" | "6mo" | "1y" | "2y" | "5y" | "10y" | "max";
+// Period can be any yfinance-supported format: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max, etc.
+export type Period = string;
 export type AyanamsaType = "lahiri" | "raman" | "tropical";
 
 const DEFAULT_PERIOD: Period = "1y";

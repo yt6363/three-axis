@@ -111,8 +111,7 @@ def fetch_bars(symbol: str, interval: str, period: str = DEFAULT_PERIOD) -> pd.D
         raise ValueError(f"Unsupported interval '{interval}'")
 
     requested_period = period.lower() if period else DEFAULT_PERIOD
-    if requested_period not in ALLOWED_PERIODS:
-        raise ValueError(f"Unsupported period '{period}'")
+    # Let yfinance validate the period - it supports many formats like 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max, etc.
 
     norm_symbol = normalize_symbol(symbol)
     last_error: str | None = None
