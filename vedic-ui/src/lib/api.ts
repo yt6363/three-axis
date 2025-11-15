@@ -17,7 +17,7 @@ export type Interval =
   | "1mo"
   | "3mo";
 
-export type Period = "5d" | "1mo" | "3mo" | "6mo" | "1y" | "2y" | "5y" | "max";
+export type Period = "5d" | "1mo" | "3mo" | "6mo" | "1y" | "2y" | "5y" | "10y" | "max";
 export type AyanamsaType = "lahiri" | "raman" | "tropical";
 
 const DEFAULT_PERIOD: Period = "1y";

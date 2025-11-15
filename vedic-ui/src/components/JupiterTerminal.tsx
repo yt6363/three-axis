@@ -145,7 +145,7 @@ const JUPITER_TERMINAL_SESSION_KEY = "vd:jupiter-terminal-state:v1";
 
 const DURATION_UNITS = ["years", "months", "weeks", "days"] as const;
 
-const PERIOD_OPTIONS = ["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const;
+const PERIOD_OPTIONS = ["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "max"] as const;
 
 const MAX_CANDLES_TO_STORE = 4000;
 
@@ -3186,7 +3186,7 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                   </button>
                   {periodDropdown.open && (
                     <div className="absolute z-30 mt-1 w-full border border-zinc-800/40 bg-black shadow-xl max-h-96 overflow-y-auto">
-                      {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"] as const).map((opt) => (
+                      {(["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "max"] as const).map((opt) => (
                         <button
                           key={opt}
                           type="button"
@@ -3215,16 +3215,11 @@ const [chartReadyTick, setChartReadyTick] = useState(0);
                             value={customPeriodInput}
                             onChange={(e) => setCustomPeriodInput(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' && customPeriodInput.trim()) {
-                                const trimmed = customPeriodInput.trim();
-                                // Validate against allowed periods
-                                const validPeriods = ["5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "max"];
-                                if (validPeriods.includes(trimmed)) {
-                                  setPeriod(trimmed as Period);
-                                  periodDropdown.setOpen(false);
-                                  setShowPeriodCustom(false);
-                                  setCustomPeriodInput("");
-                                } else {
+                              if (e.key === 'Enter' if (e.key === 'Enter' && customPeriodInput.trim()) {if (e.key === 'Enter' && customPeriodInput.trim()) { customPeriodInput.trim()) {
+                                setPeriod(customPeriodInput.trim() as Period);
+                                periodDropdown.setOpen(false);
+                                setShowPeriodCustom(false);
+                                setCustomPeriodInput("");
                                   // Show error or ignore invalid input
                                   setCustomPeriodInput("");
                                   alert(`Invalid period "${trimmed}". Allowed: 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max`);
