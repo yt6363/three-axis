@@ -187,9 +187,6 @@ async def get_ohlc(
     if requested_interval not in PANDAS_FREQ:
         raise HTTPException(status_code=400, detail=f"Unsupported interval '{interval}'")
 
-    if requested_period not in ALLOWED_PERIODS:
-        raise HTTPException(status_code=400, detail=f"Unsupported period '{period}'")
-
     normalized_symbol = normalize_symbol(symbol)
     cache_key = f"{normalized_symbol}|{requested_interval}|{requested_period}"
     cached = cache.get(cache_key)
